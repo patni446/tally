@@ -583,7 +583,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #37<br><span id="diag"></span></p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #39<br><span id="diag"></span></p>
   </div>
 </div>
 
@@ -767,8 +767,27 @@
   }
   let shown = { id: null, full: 0, rest: 0 }, fadeNext = false, fadeT = 0, halfLater = false;
 
+  // Summe zählt beim Tab-Wechsel weich zur neuen Zahl (statt umzuspringen)
+  var sumShown = null, sumRaf = 0;
+  function setSum(v, dur) {
+    const el = $("sum");
+    cancelAnimationFrame(sumRaf);
+    if (sumShown === null || !dur || Math.abs(v - sumShown) < .005) { sumShown = v; el.textContent = euro(v); return; }
+    const from = sumShown, t0 = performance.now();
+    const cents = Math.round(from * 100) % 100 !== 0 || Math.round(v * 100) % 100 !== 0;
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 4); // sanft auslaufend
+      const cur = from + (v - from) * e;
+      sumShown = k < 1 ? cur : v;
+      el.textContent = euro(k < 1 ? (cents ? Math.round(cur * 100) / 100 : Math.round(cur)) : v);
+      if (k < 1) sumRaf = requestAnimationFrame(step);
+    };
+    sumRaf = requestAnimationFrame(step);
+  }
+
   function render() {
     const tab = active();
+    const switchingTab = swapping;
 
     // Tabs
     const tabsEl = $("tabs");
@@ -847,7 +866,7 @@
     $("minus").disabled = moneyOf(tab) <= 0;
 
     // Summe
-    $("sum").textContent = euro(moneyOf(tab));
+    setSum(moneyOf(tab), switchingTab ? 700 : 260);
     const total = state.tabs.reduce((a, t) => a + moneyOf(t), 0);
     document.querySelectorAll(".val").forEach(el => el.textContent = euro(valOf(tab)));
     $("legend").innerHTML = '<svg viewBox="0 0 8 16" aria-hidden="true"><line x1="4" y1="2" x2="4" y2="14"></line></svg>';
@@ -1016,6 +1035,45 @@
 
   // ---------- Wert pro Strich ----------
   const ROW = 36, EURO_MAX = 1000;
+  // ---- Klick-Geräusch + Haptik wie beim Drehrad in der Uhr-App ----
+  let actx = null, clickBuf = null, lastTick = 0, hapticLabel = null;
+  function audioReady() {
+    try {
+      if (!actx) {
+        const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+        actx = new AC();
+        // kurzer, heller "Tick": wenige Millisekunden Rauschen, schnell ausklingend
+        const n = Math.floor(actx.sampleRate * .012); clickBuf = actx.createBuffer(1, n, actx.sampleRate);
+        const d = clickBuf.getChannelData(0);
+        for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 6);
+      }
+      if (actx.state === "suspended") actx.resume();
+    } catch (e) {}
+  }
+  function haptic() {
+    // iOS (ab 18): ein unsichtbarer Schalter liefert das System-Tippgefühl; andere Geräte: vibrate
+    try {
+      if (!hapticLabel) {
+        hapticLabel = document.createElement("label");
+        hapticLabel.setAttribute("aria-hidden", "true");
+        hapticLabel.style.cssText = "position:fixed;left:-100px;top:0;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none";
+        const inp = document.createElement("input"); inp.type = "checkbox"; inp.setAttribute("switch", "");
+        hapticLabel.appendChild(inp); document.body.appendChild(hapticLabel);
+      }
+      hapticLabel.click();
+    } catch (e) {}
+    if (navigator.vibrate) try { navigator.vibrate(4); } catch (e) {}
+  }
+  function tick() {
+    const now = performance.now(); if (now - lastTick < 28) return; lastTick = now;
+    if (actx && clickBuf && actx.state === "running") {
+      const src = actx.createBufferSource(); src.buffer = clickBuf;
+      const hp = actx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 2200;
+      const g = actx.createGain(); g.gain.value = .35;
+      src.connect(hp); hp.connect(g); g.connect(actx.destination); src.start();
+    }
+    haptic();
+  }
   function buildWheel(el, count, label) {
     el.textContent = "";
     for (let i = 0; i < count; i++) {
@@ -1024,7 +1082,13 @@
       el.appendChild(d);
     }
     let raf = 0;
-    el.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; paintWheel(el); }); }, { passive: true });
+    el._last = 0;
+    el.addEventListener("scroll", () => {
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; paintWheel(el); });
+      const i = Math.round(el.scrollTop / ROW);
+      if (i !== el._last) { el._last = i; tick(); } // bei jeder neuen Zahl: Klick + Haptik
+    }, { passive: true });
+    ["touchstart", "pointerdown"].forEach(ev => el.addEventListener(ev, audioReady, { passive: true }));
   }
   function paintWheel(el) {
     const c = el.scrollTop / ROW, kids = el.children;
@@ -1036,7 +1100,7 @@
     }
   }
   const wheelIdx = (el) => Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollTop / ROW)));
-  function setWheel(el, i) { el.scrollTop = i * ROW; paintWheel(el); }
+  function setWheel(el, i) { el._last = i; el.scrollTop = i * ROW; paintWheel(el); }
   let wheelsBuilt = false;
   function ensureWheels() {
     if (wheelsBuilt) return;
@@ -1521,7 +1585,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#37";
+  const APP_VERSION = "#39";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
