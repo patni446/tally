@@ -549,7 +549,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #24<br><span id="diag"></span></p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #25<br><span id="diag"></span></p>
   </div>
 </div>
 
@@ -1473,6 +1473,23 @@
   connect();
 
 
+
+  // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
+  // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
+  // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
+  const APP_VERSION = "#25";
+  async function checkUpdate() {
+    if (!/github\.io$/.test(location.hostname)) return;
+    try {
+      const last = Number(sessionStorage.getItem("tally.upd") || 0);
+      if (Date.now() - last < 60000) return; // nicht in Schleife neu laden
+      const r = await fetch(location.pathname, { cache: "reload" });
+      const t = await r.text(), m = t.match(/const APP_VERSION = "([^"]+)"/);
+      if (m && m[1] !== APP_VERSION) { sessionStorage.setItem("tally.upd", String(Date.now())); location.reload(); }
+    } catch (e) {}
+  }
+  setTimeout(checkUpdate, 1500);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(); });
   // ---------- Reflexe: farbige Knöpfe/Tabs in der Nähe spiegeln sich leicht im Glasrand ----------
   var reflQ = 0; // var: render() läuft schon vor dieser Zeile
   function reflectSoon() { if (!reflQ) reflQ = requestAnimationFrame(() => { reflQ = 0; reflect(); }); }
