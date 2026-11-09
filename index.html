@@ -108,6 +108,41 @@
   }
   .gear:active { transform: scale(.88); transition-duration: .08s; }
   .gear svg { width: 22px; height: 22px; }
+  /* Abrechnen */
+  .pay-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .pay-item + .pay-item { border-top: .5px solid var(--sep); }
+  .pay-item .row { border-top: 0; }
+  .pay-row .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; margin: 0 6px; }
+  .pay-row .pay-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pay-row .row-val { margin-left: 0; }
+  .pay-row .chev { width: 14px; height: 14px; color: var(--label3); flex: none; transition: transform .35s var(--spring); }
+  .pay-item.open .chev { transform: rotate(90deg); }
+  .pay-exp { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .38s var(--spring); }
+  .pay-item.open .pay-exp { grid-template-rows: 1fr; }
+  .pay-inner { overflow: hidden; min-height: 0; }
+  .pay-form { display: flex; gap: 10px; padding: 2px 14px 4px; }
+  .pay-field {
+    flex: 1; min-width: 0; display: flex; align-items: center; height: 48px; padding: 0 16px;
+    border-radius: 24px; background: var(--sheet);
+  }
+  .pay-field input {
+    flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--label);
+    font: inherit; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums;
+    -webkit-user-select: text; user-select: text;
+  }
+  .pay-field input::placeholder { color: var(--label3); font-weight: 500; }
+  .pay-field span { font-size: 20px; font-weight: 600; color: var(--label2); }
+  .pay-go {
+    flex: none; height: 48px; padding: 0 20px; border-radius: 24px; background: var(--blue); color: #fff;
+    font-size: 17px; font-weight: 600; transition: transform .3s var(--bounce), opacity .2s;
+  }
+  .pay-go:active { transform: scale(.95); transition-duration: .07s; }
+  .pay-go:disabled { opacity: .35; }
+  .pay-hint { margin: 8px 18px 14px; font-size: 13px; line-height: 1.4; color: var(--label2); }
+  .pay-hint.err { color: var(--red); }
+  .row-val.flash { animation: flash .6s ease; }
+  @keyframes flash { 30% { color: var(--green); transform: scale(1.08); } }
+  .row-val { display: inline-block; }
   .section-label { font-size: 13px; color: var(--label2); text-transform: uppercase; letter-spacing: .3px; margin: 2px 6px 8px; }
   .row .check { margin-left: auto; width: 20px; height: 20px; color: var(--blue); visibility: hidden; }
   .row.sel .check { visibility: visible; }
@@ -349,6 +384,7 @@
   <header>
     <h1>Tally</h1>
     <div class="hbtns">
+      <button class="gear" id="payBtn" aria-label="Abrechnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 7.5V6a1.5 1.5 0 0 0-1.5-1.5H6A2.5 2.5 0 0 0 3.5 7v10A2.5 2.5 0 0 0 6 19.5h12a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 18 7.5H6"/><path d="M16.5 13.75h.01" stroke-width="3"/></svg></button>
       <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button class="more" id="addBtn" aria-label="Tab hinzufügen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>
@@ -411,6 +447,20 @@
     <div class="list">
       <button class="row destructive" data-act="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg><span>Tab löschen</span></button>
     </div>
+  </div>
+</div>
+
+<!-- Abrechnen: Betrag von einem Tab abziehen -->
+<div class="sheet" id="paySheet">
+  <div class="group panel">
+    <div class="form-head">
+      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      <h2>Abrechnen</h2>
+      <span class="spacer"></span>
+    </div>
+    <p class="section-label">Betrag abziehen</p>
+    <div class="list pay-list" id="payList"></div>
+    <p class="hint">Tippe auf einen Tab und gib einen Betrag ein. Er wird abgezogen, indem die passende Anzahl Striche entfernt wird.</p>
   </div>
 </div>
 
@@ -988,7 +1038,7 @@
   document.querySelectorAll(".sheet").forEach(sh => {
     let y0 = null, dy = 0, t0 = 0, moved = false;
     sh.addEventListener("touchstart", (e) => {
-      if (e.touches.length > 1 || e.target.closest("input, textarea, .wheel")) { y0 = null; return; }
+      if (e.touches.length > 1 || e.target.closest("input, textarea, .wheel, .pay-list")) { y0 = null; return; }
       y0 = e.touches[0].clientY; dy = 0; t0 = Date.now(); moved = false;
     }, { passive: true });
     sh.addEventListener("touchmove", (e) => {
@@ -1017,6 +1067,82 @@
     sh.addEventListener("touchend", end);
     sh.addEventListener("touchcancel", end);
   });
+
+  // ---------- Abrechnen ----------
+  function parseAmt(txt) {
+    let t = String(txt || "").replace(/\s|€/g, "");
+    if (t.includes(",")) t = t.replace(/\./g, "").replace(",", ".");
+    else if (!/^\d+\.\d{1,2}$/.test(t)) t = t.replace(/\./g, "");
+    const v = Number(t);
+    return t !== "" && Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : null;
+  }
+  let payOpen = null;
+  function payPlan(t, amt) {
+    const val = valOf(t);
+    let n = Math.floor(amt / val + 1e-9);
+    const capped = n > t.count;
+    if (capped) n = t.count;
+    return { n, val, sum: Math.round(n * val * 100) / 100, rest: Math.round((amt - n * val) * 100) / 100, capped };
+  }
+  function payHint(item, t) {
+    const inp = item.querySelector("input"), hint = item.querySelector(".pay-hint"), go = item.querySelector(".pay-go");
+    const amt = parseAmt(inp.value), val = valOf(t);
+    hint.classList.remove("err");
+    if (amt === null) { hint.textContent = "1 Strich = " + euro(val) + " · Offen: " + euro(t.count * val); go.disabled = true; return; }
+    const pl = payPlan(t, amt);
+    if (t.count === 0) { hint.textContent = "In diesem Tab sind keine Striche."; hint.classList.add("err"); go.disabled = true; return; }
+    if (pl.n === 0) { hint.textContent = "Mindestens " + euro(val) + " (1 Strich)."; hint.classList.add("err"); go.disabled = true; return; }
+    let txt = "= " + pl.n + (pl.n === 1 ? " Strich" : " Striche") + " (" + euro(pl.sum) + ")";
+    if (pl.capped) txt = "Nur " + t.count + " Striche vorhanden – es werden alle entfernt (" + euro(pl.sum) + ").";
+    else if (pl.rest > 0) txt += " · " + euro(pl.rest) + " Rest passt in keinen Strich und wird nicht abgezogen.";
+    hint.textContent = txt;
+    go.disabled = false;
+  }
+  function renderPay(flashId) {
+    const box = $("payList");
+    box.textContent = "";
+    state.tabs.forEach(t => {
+      const item = document.createElement("div");
+      item.className = "pay-item" + (payOpen === t.id ? " open" : "");
+      item.innerHTML =
+        '<button type="button" class="row pay-row"><span class="dot"></span><span class="pay-name"></span><span class="row-val"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>' +
+        '<div class="pay-exp"><div class="pay-inner">' +
+          '<form class="pay-form" autocomplete="off"><label class="pay-field"><input inputmode="decimal" enterkeyhint="done" placeholder="Betrag" aria-label="Betrag in Euro"><span>€</span></label>' +
+          '<button type="submit" class="pay-go">Abziehen</button></form>' +
+          '<p class="pay-hint"></p>' +
+        '</div></div>';
+      item.querySelector(".dot").style.background = hexOf(t.color);
+      item.querySelector(".pay-name").textContent = t.name;
+      const rv = item.querySelector(".row-val");
+      rv.textContent = euro(t.count * valOf(t));
+      if (flashId === t.id) rv.classList.add("flash");
+      const inp = item.querySelector("input");
+      item.querySelector(".pay-row").onclick = () => {
+        const opening = payOpen !== t.id;
+        payOpen = opening ? t.id : null;
+        box.querySelectorAll(".pay-item").forEach(el => el.classList.toggle("open", el === item && opening));
+        if (opening) { inp.value = ""; payHint(item, t); inp.focus({ preventScroll: true }); }
+        else inp.blur();
+      };
+      inp.addEventListener("input", () => payHint(item, t));
+      item.querySelector(".pay-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const amt = parseAmt(inp.value);
+        if (amt === null) return;
+        const pl = payPlan(t, amt);
+        if (pl.n < 1) return;
+        t.count -= pl.n;
+        lastAdded = -1;
+        payOpen = null;
+        inp.blur();
+        commit(); bumpSum();
+        renderPay(t.id);
+      });
+      payHint(item, t);
+      box.appendChild(item);
+    });
+  }
+  $("payBtn").onclick = () => { payOpen = null; renderPay(); show($("paySheet")); };
 
   // ---------- Einstellungen ----------
   function renderThemeList() {
@@ -1124,6 +1250,8 @@
   document.addEventListener("touchmove", (e) => {
     if (e.touches.length > 1) return;
     if (e.target.closest && e.target.closest("textarea, .wheel")) return;
+    const pl = e.target.closest && e.target.closest(".pay-list");
+    if (pl && pl.scrollHeight > pl.clientHeight + 1) return;
     const t = e.touches[0];
     const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
     const tally = e.target.closest && e.target.closest(".tally");
