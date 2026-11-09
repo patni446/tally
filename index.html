@@ -382,10 +382,9 @@
 <body>
 <div class="app">
   <header>
-    <h1>Tally</h1>
+    <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <div class="hbtns">
       <button class="gear" id="payBtn" aria-label="Abrechnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 7.5V6a1.5 1.5 0 0 0-1.5-1.5H6A2.5 2.5 0 0 0 3.5 7v10A2.5 2.5 0 0 0 6 19.5h12a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 18 7.5H6"/><path d="M16.5 13.75h.01" stroke-width="3"/></svg></button>
-      <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button class="more" id="addBtn" aria-label="Tab hinzufügen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>
       </button>
@@ -460,7 +459,7 @@
     </div>
     <p class="section-label">Betrag abziehen</p>
     <div class="list pay-list" id="payList"></div>
-    <p class="hint">Tippe auf einen Tab und gib einen Betrag ein. Er wird abgezogen, indem die passende Anzahl Striche entfernt wird.</p>
+    <p class="hint">Tippe auf einen Tab und gib einen Betrag ein. Er wird genau abgezogen: volle Striche verschwinden, ein Rest wird von der Summe abgezogen.</p>
   </div>
 </div>
 
@@ -670,7 +669,8 @@
 
     // Karte
     $("tabName").textContent = tab.name;
-    $("count").textContent = tab.count === 1 ? "1 Strich" : tab.count + " Striche";
+    $("count").textContent = (tab.count === 1 ? "1 Strich" : tab.count + " Striche") +
+      (tab.count && tab.off ? " − " + euro(-tab.off) : "");
     const tally = $("tally");
     tally.textContent = "";
     tally.classList.toggle("swap", swapping);
@@ -692,8 +692,8 @@
     $("minus").disabled = tab.count === 0;
 
     // Summe
-    $("sum").textContent = euro(tab.count * valOf(tab));
-    const total = state.tabs.reduce((a, t) => a + t.count * valOf(t), 0);
+    $("sum").textContent = euro(moneyOf(tab));
+    const total = state.tabs.reduce((a, t) => a + moneyOf(t), 0);
     document.querySelectorAll(".val").forEach(el => el.textContent = euro(valOf(tab)));
     $("legend").innerHTML = '<svg viewBox="0 0 8 16" aria-hidden="true"><line x1="4" y1="2" x2="4" y2="14"></line></svg>';
     $("legend").appendChild(document.createTextNode("= " + euro(valOf(tab))));
@@ -701,6 +701,10 @@
     $("sumAll").textContent = state.tabs.length > 1 ? "Alle Tabs: " + euro(total) : tab.name;
   }
 
+  function moneyOf(t) {
+    if (!t.count) return 0;
+    return Math.max(0, Math.round((t.count * valOf(t) + (Number(t.off) || 0)) * 100) / 100);
+  }
   function bumpSum() {
     const s = $("sum");
     s.classList.remove("bump"); void s.offsetWidth; s.classList.add("bump");
@@ -725,6 +729,7 @@
     const t = active();
     if (t.count <= 0) return;
     t.count -= 1;
+    if (t.count === 0) t.off = 0;
     lastAdded = -1;
     commit();
     bumpSum();
@@ -775,7 +780,7 @@
   // ---------- Daten exportieren / importieren ----------
   function exportCode() {
     const json = JSON.stringify({
-      tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t) })),
+      tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t), off: Number(t.off) || 0 })),
       activeId: state.activeId,
     });
     return "TALLY1:" + btoa(unescape(encodeURIComponent(json)));
@@ -832,6 +837,7 @@
         count: Math.max(0, Math.floor(Number(t.count) || 0)),
         color: COLORS[t.color] ? t.color : "blue",
         value: Number(t.value) > 0 ? Math.round(Number(t.value) * 100) / 100 : VALUE,
+        off: Math.min(0, Math.round((Number(t.off) || 0) * 100) / 100),
       }));
       state = { tabs, activeId: tabs.some(t => t.id === d.activeId) ? d.activeId : tabs[0].id, updatedAt: 0 };
       lastAdded = -1;
@@ -1078,23 +1084,24 @@
   }
   let payOpen = null;
   function payPlan(t, amt) {
-    const val = valOf(t);
-    let n = Math.floor(amt / val + 1e-9);
-    const capped = n > t.count;
-    if (capped) n = t.count;
-    return { n, val, sum: Math.round(n * val * 100) / 100, rest: Math.round((amt - n * val) * 100) / 100, capped };
+    const val = valOf(t), have = moneyOf(t);
+    const capped = amt > have + 1e-9;
+    const take = capped ? have : amt;
+    const left = Math.round((have - take) * 100) / 100;
+    const count = left <= 0 ? 0 : Math.ceil(left / val - 1e-9);
+    const off = count ? Math.round((left - count * val) * 100) / 100 : 0;
+    return { take, left, count, off, capped, have };
   }
   function payHint(item, t) {
     const inp = item.querySelector("input"), hint = item.querySelector(".pay-hint"), go = item.querySelector(".pay-go");
     const amt = parseAmt(inp.value), val = valOf(t);
     hint.classList.remove("err");
-    if (amt === null) { hint.textContent = "1 Strich = " + euro(val) + " · Offen: " + euro(t.count * val); go.disabled = true; return; }
+    if (moneyOf(t) <= 0) { hint.textContent = "In diesem Tab ist nichts offen."; hint.classList.add("err"); go.disabled = true; return; }
+    if (amt === null) { hint.textContent = "Offen: " + euro(moneyOf(t)) + " · 1 Strich = " + euro(val); go.disabled = true; return; }
     const pl = payPlan(t, amt);
-    if (t.count === 0) { hint.textContent = "In diesem Tab sind keine Striche."; hint.classList.add("err"); go.disabled = true; return; }
-    if (pl.n === 0) { hint.textContent = "Mindestens " + euro(val) + " (1 Strich)."; hint.classList.add("err"); go.disabled = true; return; }
-    let txt = "= " + pl.n + (pl.n === 1 ? " Strich" : " Striche") + " (" + euro(pl.sum) + ")";
-    if (pl.capped) txt = "Nur " + t.count + " Striche vorhanden – es werden alle entfernt (" + euro(pl.sum) + ").";
-    else if (pl.rest > 0) txt += " · " + euro(pl.rest) + " Rest passt in keinen Strich und wird nicht abgezogen.";
+    let txt = euro(pl.have) + " − " + euro(pl.take) + " = " + euro(pl.left);
+    txt += pl.count ? " (" + (pl.count === 1 ? "1 Strich" : pl.count + " Striche") + (pl.off ? " − " + euro(-pl.off) : "") + ")" : "";
+    if (pl.capped) txt = "Es sind nur " + euro(pl.have) + " offen – es wird alles abgezogen. Danach: " + euro(0);
     hint.textContent = txt;
     go.disabled = false;
   }
@@ -1114,7 +1121,7 @@
       item.querySelector(".dot").style.background = hexOf(t.color);
       item.querySelector(".pay-name").textContent = t.name;
       const rv = item.querySelector(".row-val");
-      rv.textContent = euro(t.count * valOf(t));
+      rv.textContent = euro(moneyOf(t));
       if (flashId === t.id) rv.classList.add("flash");
       const inp = item.querySelector("input");
       item.querySelector(".pay-row").onclick = () => {
@@ -1130,8 +1137,8 @@
         const amt = parseAmt(inp.value);
         if (amt === null) return;
         const pl = payPlan(t, amt);
-        if (pl.n < 1) return;
-        t.count -= pl.n;
+        t.count = pl.count;
+        t.off = pl.off;
         lastAdded = -1;
         payOpen = null;
         inp.blur();
