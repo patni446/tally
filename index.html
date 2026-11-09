@@ -32,7 +32,7 @@
     --dockbg: rgba(242,242,247,.86);
     --tally: #1C1C1E;
     --sheet: #FFFFFF;
-    --sheet-glass: rgba(255,255,255,.74);
+    --sheet-glass: rgba(255,255,255,.62);
     --dim: rgba(0,0,0,.35);
   }
   :root[data-theme="dark"] {
@@ -52,7 +52,7 @@
     --dockbg: rgba(0,0,0,.82);
       --tally: #F2F2F7;
       --sheet: #2C2C2E;
-      --sheet-glass: rgba(40,40,42,.76);
+      --sheet-glass: rgba(40,40,42,.64);
       --dim: rgba(0,0,0,.55);
   }
   @media (prefers-color-scheme: dark) {
@@ -73,7 +73,7 @@
     --dockbg: rgba(0,0,0,.82);
       --tally: #F2F2F7;
       --sheet: #2C2C2E;
-      --sheet-glass: rgba(40,40,42,.76);
+      --sheet-glass: rgba(40,40,42,.64);
       --dim: rgba(0,0,0,.55);
     }
   }
@@ -119,8 +119,8 @@
   .gear svg { width: 26px; height: 26px; }
   /* Abrechnen */
   .pay-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-  .pay-item + .pay-item { border-top: .5px solid var(--sep); }
-  .pay-item .row { border-top: 0; }
+  .pay-item + .pay-item { background-image: linear-gradient(var(--sep), var(--sep)); background-repeat: no-repeat; background-position: 16px 0; background-size: calc(100% - 32px) .5px; }
+  .pay-item .row { background-image: none; }
   .pay-row .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; margin: 0 2px 0 4px; }
   .pay-row .pay-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pay-row .row-val { margin-left: 0; }
@@ -153,7 +153,8 @@
   #paySheet .pay-item { max-height: 54px; overflow: hidden; transition: max-height .45s var(--spring), opacity .3s ease, border-color .3s ease; }
   #paySheet .pay-item.open { max-height: 210px; }
   #paySheet .section-label, #paySheet .hint { max-height: 90px; overflow: hidden; transition: max-height .45s var(--spring), opacity .3s ease, margin .45s var(--spring); }
-  #paySheet.typing .pay-item:not(.open) { max-height: 0; opacity: 0; border-top-color: transparent; }
+  #paySheet.typing .pay-item:not(.open) { max-height: 0; opacity: 0; background-image: none; }
+  #paySheet.typing .pay-item.open { background-image: none; }
   #paySheet.typing .section-label, #paySheet.typing .hint { max-height: 0; opacity: 0; margin-top: 0; margin-bottom: 0; }
   #paySheet.typing .pay-list { max-height: 400px; }
   .row-val.flash { animation: flash .6s ease; }
@@ -259,8 +260,13 @@
     border: 2.5px solid var(--label2);
   }
   /* Wie in der Dynamic Island: Punkt sitzt mittig im runden Ende, überall gleich weit vom Rand (10 px) */
-  .chip.dotted { display: inline-flex; align-items: center; padding-left: 10px; }
-  .chip .dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; }
+  .chip { display: inline-flex; align-items: center; }
+  .chip.dotted { padding-left: 10px; }
+  .chip .dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px;
+    transition: width .35s var(--spring), margin .35s var(--spring), opacity .25s ease, transform .35s var(--spring); }
+  .chip.active .dot { width: 0; margin-right: 0; opacity: 0; transform: scale(.4); }
+  .chip .cl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip.lg { touch-action: pan-x; } /* Tab-Leiste bleibt seitwärts wischbar */
 
   /* Unten fixiert: Klicker + Summe */
   .dock {
@@ -269,7 +275,9 @@
     -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
     padding: 0 20px calc(env(safe-area-inset-bottom) + 30px);
   }
-  .sumbar-inner { max-width: 520px; margin: 0 auto; border-top: .5px solid var(--sep); padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .sumbar-inner { max-width: 520px; margin: 0 auto; padding-top: 10px;
+    background: linear-gradient(var(--sep), var(--sep)) no-repeat 16px 0 / calc(100% - 32px) .5px; /* eingerückt wie die Listen-Trennlinien */
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .sum-label { font-size: 13px; color: var(--label2); text-transform: uppercase; letter-spacing: .3px; }
   .sum-total { font-size: 13px; color: var(--label2); margin-top: 3px; font-variant-numeric: tabular-nums; }
   .sum-value { font-size: 34px; font-weight: 700; letter-spacing: -.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -300,7 +308,7 @@
   .sheet.show { transform: translate3d(0, 0, 0); visibility: visible; pointer-events: auto; transition: transform .5s var(--spring), bottom .4s var(--spring), visibility 0s; }
   .sheet.dragging { transition: none !important; }
   .group { background: var(--sheet-glass); border-radius: var(--sheet-r); overflow: hidden;
-    -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%); }
+    -webkit-backdrop-filter: blur(34px) saturate(180%); backdrop-filter: blur(34px) saturate(180%); }
   .sheet .group:first-child { position: relative; }
   .sheet .group:first-child::before {
     content: none; /* kein Griff-Strich mehr oben */
@@ -320,16 +328,17 @@
   .pill + .pill { margin-top: 10px; }
   .pill:active { transform: scale(.97); opacity: .7; transition-duration: .07s; }
   .pill.destructive { background: rgba(255,59,48,.16); color: var(--red); }
-  .list { background: var(--fill); border-radius: calc(var(--sheet-r) - 20px); overflow: hidden; }
+  .list { background: var(--fill); border-radius: 26px; overflow: hidden; } /* Ecken wie die Karten im App Store */
   .list + .list { margin-top: 10px; }
   .row {
     display: flex; align-items: center; gap: 14px; width: 100%; height: 52px; padding: 0 18px;
     font-size: 17px; color: var(--label); text-align: left;
-    border-top: .5px solid var(--sep);
+    /* Trennlinie wie bei Apple: links und rechts eingerückt, nicht von Rand zu Rand */
+    background-image: linear-gradient(var(--sep), var(--sep)); background-repeat: no-repeat; background-position: 16px 0; background-size: calc(100% - 32px) .5px;
   }
-  .row:first-child { border-top: 0; }
-  .row { transition: background .25s ease; }
-  .row:active { background: var(--fill); transition-duration: 0s; }
+  .row:first-child { background-image: none; }
+  .row { transition: background-color .25s ease; }
+  .row:active { background-color: var(--fill); transition-duration: 0s; }
   .row svg { width: 22px; height: 22px; flex: none; color: var(--blue); }
   .row.destructive, .row.destructive svg { color: var(--red); }
   .row .row-val { margin-left: auto; color: var(--label2); font-variant-numeric: tabular-nums; }
@@ -379,10 +388,10 @@
   .group + .group { margin-top: 8px; }
   .action {
     display: block; width: 100%; height: 57px; font-size: 20px; color: var(--blue); text-align: center;
-    border-top: .5px solid var(--sep);
+    background-image: linear-gradient(var(--sep), var(--sep)); background-repeat: no-repeat; background-position: 16px 0; background-size: calc(100% - 32px) .5px;
   }
-  .action:first-child { border-top: 0; }
-  .action:active { background: var(--fill); }
+  .action:first-child { background-image: none; }
+  .action:active { background-color: var(--fill); }
   .action.destructive { color: var(--red); }
   .action.bold { font-weight: 600; }
   .sheet-title { padding: 14px 16px 12px; text-align: center; font-size: 13px; color: var(--label2); border-bottom: .5px solid var(--sep); }
@@ -418,10 +427,14 @@
   .lg { --sx: 1; --sy: 1; --tx: 0px; --ty: 0px; position: relative; touch-action: none; -webkit-touch-callout: none; }
   .lg, .lg:active, .lg:active:not(:disabled) { transform: translate3d(var(--tx), var(--ty), 0) scale(var(--sx), var(--sy)) !important; }
   /* Genau wie im Knopf-Test: schnell flachdrücken, beim Loslassen federnd zurück */
-  /* Weich: ohne Zucken flachdrücken, ruhig zurückfedern */
-  .lg { transition: transform .6s cubic-bezier(.3,1.35,.55,1), background .4s ease, box-shadow .4s ease, filter .4s ease, color .3s ease !important; }
-  .lg.pressed { transition: transform .32s cubic-bezier(.25,.75,.3,1), background .28s ease, box-shadow .28s ease, filter .28s ease !important; }
-  .lg.pressed.moving { transition: transform .2s cubic-bezier(.2,.7,.3,1), background .28s ease, filter .28s ease !important; }
+  /* Bewegung rechnet eine Feder in JS (Bild für Bild) – gleich flüssig mit Finger und Maus.
+     CSS blendet nur noch Licht/Aufhellung ein (Deckkraft = ruckelfrei auf dem iPhone). */
+  .lg { transition: background-color .45s ease, color .4s ease, box-shadow .5s ease, padding .35s var(--spring) !important; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  .lg::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: rgba(255,255,255,.13); opacity: 0; transition: opacity .35s ease;
+  }
+  .lg.pressed::before { opacity: 1; transition-duration: .22s; }
   /* Glas-Rand wie im Bild: feiner heller Ring, oben stärker */
   .gear.lg, .form-head .icon-btn.x.lg, .minus.lg {
     box-shadow: var(--refl, 0 0 #0000), inset 0 0 0 .5px rgba(255,255,255,.07), inset 0 1.5px 3px rgba(255,255,255,.16), inset 0 0 7px rgba(255,255,255,.06);
@@ -432,22 +445,20 @@
   .clicker.lg {
     box-shadow: 0 10px 28px rgba(52,199,89,.30), inset 0 0 0 .5px rgba(255,255,255,.12), inset 0 2px 4px rgba(255,255,255,.28), inset 0 0 10px rgba(255,255,255,.1);
   }
-  /* Gedrückt: heller wie im Test */
-  .gear.lg.pressed, .form-head .icon-btn.x.lg.pressed, .minus.lg.pressed { background: var(--fill-press); }
-  .more.lg.pressed, .form-head .icon-btn.ok.lg.pressed, .clicker.lg.pressed { filter: brightness(1.18); }
+
   .lg::after {
     content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
     background: radial-gradient(circle at var(--gx, 50%) var(--gy, 30%), rgba(255,255,255,.34), rgba(255,255,255,0) 62%);
     opacity: 0; transition: opacity .4s ease;
   }
-  .lg.pressed::after { opacity: 1; transition-duration: .28s; }
+  .lg.pressed::after { opacity: 1; transition-duration: .22s; }
   /* Pop-ups mit Knöpfen: Hintergrund als eigene Ebene geformt, damit der gedrückte Knopf nicht abgeschnitten wird */
   .sheet .group.unclip { position: relative; background: transparent; overflow: visible; z-index: 0;
     -webkit-backdrop-filter: none; backdrop-filter: none; }
   .sheet .group.unclip::before {
     content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
     background: var(--sheet-glass); border-radius: var(--sheet-r);
-    -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(34px) saturate(180%); backdrop-filter: blur(34px) saturate(180%);
     clip-path: var(--sq, none); -webkit-clip-path: var(--sq, none);
   }
 </style>
@@ -550,7 +561,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #26<br><span id="diag"></span></p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #31<br><span id="diag"></span></p>
   </div>
 </div>
 
@@ -736,25 +747,32 @@
 
     // Tabs
     const tabsEl = $("tabs");
-    tabsEl.textContent = "";
     applyAccent(tab.color);
+    // Tab-Knöpfe bleiben erhalten (nicht neu gebaut) – so laufen Drück-Feder und Farbwechsel flüssig weiter
+    const chipEls = window.__chips || (window.__chips = new Map());
+    const keep = new Set();
     state.tabs.forEach(t => {
-      const b = document.createElement("button");
-      const isActive = t.id === tab.id;
-      b.className = "chip" + (isActive ? " active" : " dotted");
-      if (!isActive) {
-        const d = document.createElement("span");
-        d.className = "dot";
-        d.style.background = hexOf(t.color);
-        b.appendChild(d);
+      let b = chipEls.get(t.id);
+      if (!b) {
+        b = document.createElement("button");
+        b.className = "chip";
+        b.innerHTML = '<span class="dot"></span><span class="cl"></span>';
+        chipEls.set(t.id, b);
+        glassPress(b, 1.14, 1.08);
       }
-      b.appendChild(document.createTextNode(t.name));
+      const isActive = t.id === tab.id;
+      b.classList.toggle("active", isActive);
+      b.classList.toggle("dotted", !isActive);
+      b.querySelector(".dot").style.background = hexOf(t.color);
+      b.querySelector(".cl").textContent = t.name;
       b.onclick = () => {
         if (t.id === state.activeId) { openActions(); return; }
         state.activeId = t.id; lastAdded = -1; swapping = true; commit(false);
       };
       tabsEl.appendChild(b);
+      keep.add(t.id);
     });
+    chipEls.forEach((b, id) => { if (!keep.has(id)) { b.remove(); chipEls.delete(id); } });
 
     // Aktiven Tab sichtbar halten (nur seitwärts scrollen)
     const act = tabsEl.querySelector(".chip.active");
@@ -1478,7 +1496,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#26";
+  const APP_VERSION = "#31";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -1496,11 +1514,12 @@
   function reflectSoon() { if (!reflQ) reflQ = requestAnimationFrame(() => { reflQ = 0; reflect(); }); }
   function reflect() {
     const lights = [];
+    // immer gleich viele Lichtquellen (sonst kann die Farbe nicht weich überblenden)
     const add = (el) => {
-      if (!el) return;
+      if (!el) { lights.push(null); return; }
       const c = getComputedStyle(el).backgroundColor, m = c.match(/\d+(\.\d+)?/g);
-      if (!m || (m[3] !== undefined && +m[3] < .5)) return;
-      lights.push({ r: el.getBoundingClientRect(), rgb: m.slice(0, 3).join(",") });
+      if (!m || (m[3] !== undefined && +m[3] < .5)) { lights.push(null); return; }
+      lights.push({ el, r: el.getBoundingClientRect(), rgb: m.slice(0, 3).join(",") });
     };
     add(document.querySelector("#tabs .chip.active"));
     add($("addBtn"));
@@ -1509,18 +1528,18 @@
       const b = btn.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2, rad = b.width / 2;
       const parts = [];
       lights.forEach(L => {
-        if (L.r.left <= cx && L.r.right >= cx && L.r.top <= cy && L.r.bottom >= cy) return; // sich selbst nicht
+        const none = () => parts.push("inset 0px 0px 7px -3px rgba(" + (L ? L.rgb : "0,0,0") + ",0)");
+        if (!L || L.el === btn) return none(); // sich selbst nicht
         const nx = Math.max(L.r.left, Math.min(cx, L.r.right)), ny = Math.max(L.r.top, Math.min(cy, L.r.bottom));
         const dx = nx - cx, dy = ny - cy, d = Math.hypot(dx, dy);
         const gap = Math.max(0, d - rad), D = 80;
-        if (!d || gap > D) return;
+        if (!d || gap > D) return none();
         const k = Math.pow(1 - gap / D, 1.6), ux = dx / d, uy = dy / d;
         const a = (.42 * k).toFixed(3), o = 3.5;
         // Lichtsaum auf der Seite, von der das Licht kommt (dezent)
         parts.push(`inset ${(-ux * o).toFixed(2)}px ${(-uy * o).toFixed(2)}px 7px -3px rgba(${L.rgb},${a})`);
       });
-      if (parts.length) btn.style.setProperty("--refl", parts.join(", "));
-      else btn.style.removeProperty("--refl");
+      btn.style.setProperty("--refl", parts.join(", "));
     });
   }
   $("tabs").addEventListener("scroll", reflectSoon, { passive: true });
@@ -1529,35 +1548,55 @@
   // ---------- Liquid-Glass-Knöpfe ----------
   function glassPress(btn, px, py) {
     btn.classList.add("lg");
-    let on = false, cx = 0, cy = 0, w = 0, h = 0, moved = false;
-    const set = (sx, sy, tx, ty) => {
-      btn.style.setProperty("--sx", sx); btn.style.setProperty("--sy", sy);
-      btn.style.setProperty("--tx", tx + "px"); btn.style.setProperty("--ty", ty + "px");
+    // Feder-Zustand: Größe (sx/sy) und Versatz (ox/oy) mit Geschwindigkeit – nie ein Sprung
+    const st = { sx: 1, sy: 1, ox: 0, oy: 0, vsx: 0, vsy: 0, vox: 0, voy: 0, tsx: 1, tsy: 1, tox: 0, toy: 0 };
+    let on = false, cx = 0, cy = 0, w = 0, h = 0, moved = false, raf = 0, last = 0, downAt = 0, relT = 0;
+    const apply = () => {
+      btn.style.setProperty("transform", "translate3d(" + st.ox.toFixed(2) + "px," + st.oy.toFixed(2) + "px,0) scale(" + st.sx.toFixed(4) + "," + st.sy.toFixed(4) + ")", "important");
     };
+    const tick = (now) => {
+      const dt = Math.min(.032, (now - (last || now)) / 1000) || .016; last = now;
+      // gedrückt: weich und ohne Überschwingen; losgelassen: ruhiges Nachfedern
+      const k = on ? 230 : 200, c = on ? 27 : 15;
+      const sp = (p, v, t) => { const a = k * (st[t] - st[p]) - c * st[v]; st[v] += a * dt; st[p] += st[v] * dt; };
+      sp("sx", "vsx", "tsx"); sp("sy", "vsy", "tsy"); sp("ox", "vox", "tox"); sp("oy", "voy", "toy");
+      apply();
+      const rest = Math.abs(st.sx - st.tsx) + Math.abs(st.sy - st.tsy) + Math.abs(st.ox - st.tox) + Math.abs(st.oy - st.toy)
+        + Math.abs(st.vsx) + Math.abs(st.vsy) + (Math.abs(st.vox) + Math.abs(st.voy)) / 100;
+      if (rest < .0005) { Object.assign(st, { sx: st.tsx, sy: st.tsy, ox: st.tox, oy: st.toy, vsx: 0, vsy: 0, vox: 0, voy: 0 }); apply(); raf = 0; last = 0; return; }
+      raf = requestAnimationFrame(tick);
+    };
+    const kick = () => { if (!raf) { last = 0; raf = requestAnimationFrame(tick); } };
     const glow = (e) => {
       btn.style.setProperty("--gx", ((e.clientX - (cx - w / 2)) / w * 100) + "%");
       btn.style.setProperty("--gy", ((e.clientY - (cy - h / 2)) / h * 100) + "%");
     };
     btn.addEventListener("pointerdown", (e) => {
       if (btn.disabled) return;
-      on = true; moved = false;
+      clearTimeout(relT);
+      on = true; moved = false; downAt = performance.now();
       const r = btn.getBoundingClientRect();
       w = btn.offsetWidth; h = btn.offsetHeight; cx = r.left + r.width / 2; cy = r.top + r.height / 2;
       if (btn.setPointerCapture) try { btn.setPointerCapture(e.pointerId); } catch (_) {}
-      btn.classList.add("pressed"); btn.classList.remove("moving");
-      glow(e); set(px, py, 0, 0);
+      btn.classList.add("pressed");
+      glow(e); st.tsx = px; st.tsy = py; st.tox = 0; st.toy = 0; kick();
     });
     btn.addEventListener("pointermove", (e) => {
       if (!on) return;
       const dx = e.clientX - cx, dy = e.clientY - cy;
-      if (!moved && Math.hypot(dx, dy) < 4) return;
-      moved = true; btn.classList.add("moving");
+      if (!moved && Math.hypot(dx, dy) < 6) return; // kleines Fingerzittern ignorieren
+      moved = true;
       const damp = (v, m) => m * Math.tanh(v / (m * 4));
-      const k = Math.min(w, h) / 48; // große Knöpfe dehnen sich weniger
-      set(px + Math.min(.18, Math.abs(dx) / (260 * k)), py + Math.min(.18, Math.abs(dy) / (260 * k)), damp(dx, 10), damp(dy, 10));
-      glow(e);
+      const kk = Math.min(w, h) / 48; // große Knöpfe dehnen sich weniger
+      st.tsx = px + Math.min(.18, Math.abs(dx) / (260 * kk)); st.tsy = py + Math.min(.18, Math.abs(dy) / (260 * kk));
+      st.tox = damp(dx, 10); st.toy = damp(dy, 10); kick(); // Glanz bleibt, wo der Finger aufgesetzt hat (spart Arbeit beim Ziehen)
     });
-    const up = () => { if (!on) return; on = false; btn.classList.remove("pressed", "moving"); set(1, 1, 0, 0); };
+    const up = () => {
+      if (!on) return; on = false;
+      // kurzer Tipp: Drücken erst sichtbar fertig werden lassen, dann loslassen
+      const wait = Math.max(0, 130 - (performance.now() - downAt));
+      relT = setTimeout(() => { btn.classList.remove("pressed"); st.tsx = 1; st.tsy = 1; st.tox = 0; st.toy = 0; kick(); }, wait);
+    };
     ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => btn.addEventListener(ev, up));
     btn.addEventListener("contextmenu", (e) => e.preventDefault());
   }
