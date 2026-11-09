@@ -812,10 +812,16 @@
   }
   const wheelIdx = (el) => Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollTop / ROW)));
   function setWheel(el, i) { el.scrollTop = i * ROW; paintWheel(el); }
-  buildWheel($("wheelEuro"), EURO_MAX + 1, i => String(i));
-  buildWheel($("wheelCent"), 100, i => String(i).padStart(2, "0"));
+  let wheelsBuilt = false;
+  function ensureWheels() {
+    if (wheelsBuilt) return;
+    wheelsBuilt = true;
+    buildWheel($("wheelEuro"), EURO_MAX + 1, i => String(i));
+    buildWheel($("wheelCent"), 100, i => String(i).padStart(2, "0"));
+  }
   const valueInfo = (t) => "Gilt nur für „" + t.name + "“. Die Summe wird mit dem neuen Wert neu berechnet.";
   function openValue() {
+    ensureWheels();
     const t = active(), v = valOf(t);
     const e = Math.min(EURO_MAX, Math.floor(v + 1e-9)), c = Math.round((v - e) * 100);
     $("valueHint").textContent = valueInfo(t);
@@ -1083,11 +1089,15 @@
     el.style.clipPath = squirclePath(w, h, devR - gap);
     el.style.webkitClipPath = el.style.clipPath;
   }
-  const groups = document.querySelectorAll(".sheet .group");
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(es => es.forEach(en => shapeGroup(en.target)));
-    groups.forEach(g => ro.observe(g));
-  } else groups.forEach(shapeGroup);
+  const shapeAll = () => {
+    const groups = document.querySelectorAll(".sheet .group");
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(es => es.forEach(en => shapeGroup(en.target)));
+      groups.forEach(g => ro.observe(g));
+    } else groups.forEach(shapeGroup);
+  };
+  // Erst nachdem die App sichtbar ist (schnellerer Start)
+  requestAnimationFrame(() => setTimeout(shapeAll, 50));
 
   // Wischen: nur die Strich-Tabelle scrollt hoch/runter, die Tab-Leiste nur seitwärts.
   // Alles andere bleibt stehen, damit die ganze Seite nicht mitwandert.
