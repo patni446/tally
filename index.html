@@ -140,8 +140,13 @@
   .pay-go:disabled { opacity: .35; }
   .pay-hint { margin: 8px 18px 14px; font-size: 13px; line-height: 1.4; color: var(--label2); }
   .pay-hint.err { color: var(--red); }
-  #paySheet.typing .pay-item:not(.open), #paySheet.typing .section-label, #paySheet.typing .hint { display: none; }
-  #paySheet.typing .pay-list { max-height: none; }
+  /* Beim Tippen: andere Tabs und Texte weich zusammenklappen */
+  #paySheet .pay-item { max-height: 54px; overflow: hidden; transition: max-height .45s var(--spring), opacity .3s ease, border-color .3s ease; }
+  #paySheet .pay-item.open { max-height: 210px; }
+  #paySheet .section-label, #paySheet .hint { max-height: 90px; overflow: hidden; transition: max-height .45s var(--spring), opacity .3s ease, margin .45s var(--spring); }
+  #paySheet.typing .pay-item:not(.open) { max-height: 0; opacity: 0; border-top-color: transparent; }
+  #paySheet.typing .section-label, #paySheet.typing .hint { max-height: 0; opacity: 0; margin-top: 0; margin-bottom: 0; }
+  #paySheet.typing .pay-list { max-height: 400px; }
   .row-val.flash { animation: flash .6s ease; }
   @keyframes flash { 30% { color: var(--green); transform: scale(1.08); } }
   .row-val { display: inline-block; }
@@ -480,7 +485,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. · 17:50</p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. · 18:10</p>
   </div>
 </div>
 
@@ -1144,9 +1149,13 @@
         t.off = pl.off;
         lastAdded = -1;
         payOpen = null;
+        $("paySheet").classList.remove("typing");
+        item.classList.remove("open");
         inp.blur();
         commit(); bumpSum();
-        renderPay(t.id);
+        rv.textContent = euro(moneyOf(t));
+        rv.classList.remove("flash"); void rv.offsetWidth; rv.classList.add("flash");
+        setTimeout(() => { inp.value = ""; payHint(item, t); }, 450);
       });
       payHint(item, t);
       box.appendChild(item);
@@ -1204,7 +1213,9 @@
     if (!vv) return;
     const raw = Math.round(window.innerHeight - vv.height);
     const kb = Math.max(0, Math.round(raw - (vv.pageTop != null ? vv.pageTop : vv.offsetTop)));
-    if (raw > 80) {
+    const a = document.activeElement;
+    const typing = a && a.matches && a.matches("input, textarea");
+    if (raw > 80 && typing) {
       kbExpect = 0;
       try { localStorage.setItem("tally.kb", String(raw)); } catch (e) {}
       document.documentElement.style.setProperty("--kb", kb + "px");
@@ -1228,7 +1239,16 @@
     void document.body.offsetHeight;
     setTimeout(onKeyboard, 1300);
   });
-  document.addEventListener("focusout", () => setTimeout(() => { onKeyboard(); window.scrollTo(0, 0); }, 60));
+  document.addEventListener("focusout", () => {
+    setTimeout(() => {
+      const a = document.activeElement;
+      if (a && a.matches && a.matches(".sheet input, .sheet textarea")) return; // nur Feld gewechselt
+      kbExpect = 0;
+      document.documentElement.style.setProperty("--kb", "0px"); // sinkt mit der Tastatur
+      window.scrollTo(0, 0);
+    }, 0);
+    setTimeout(onKeyboard, 450);
+  });
 
   let devR = 55;
   // Eckenradius des iPhone-Displays (Punkte), damit die Pop-ups genau parallel zu den Ecken laufen
