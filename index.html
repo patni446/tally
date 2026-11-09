@@ -140,6 +140,8 @@
   .pay-go:disabled { opacity: .35; }
   .pay-hint { margin: 8px 18px 14px; font-size: 13px; line-height: 1.4; color: var(--label2); }
   .pay-hint.err { color: var(--red); }
+  #paySheet.typing .pay-item:not(.open), #paySheet.typing .section-label, #paySheet.typing .hint { display: none; }
+  #paySheet.typing .pay-list { max-height: none; }
   .row-val.flash { animation: flash .6s ease; }
   @keyframes flash { 30% { color: var(--green); transform: scale(1.08); } }
   .row-val { display: inline-block; }
@@ -250,12 +252,13 @@
     --bounce: cubic-bezier(.34,1.45,.64,1);
   }
   .overlay {
-    position: fixed; inset: 0; z-index: 20; background: var(--dim);
+    /* absolute statt fixed: iOS 26 färbt sonst die Statusleiste grau ein */
+    position: absolute; inset: 0; z-index: 20; background: var(--dim);
     opacity: 0; pointer-events: none; transition: opacity .38s ease;
   }
   .overlay.show { opacity: 1; pointer-events: auto; }
   .sheet {
-    position: fixed; left: 0; right: 0; bottom: calc(var(--hide-b, 0px) + var(--kb, 0px)); z-index: 21;
+    position: absolute; left: 0; right: 0; bottom: calc(var(--hide-b, 0px) + var(--kb, 0px)); z-index: 21;
     max-width: 560px; margin: 0 auto;
     padding: 0 var(--gap) var(--gap);
     /* Geschlossen: ganz aus dem Bild und unsichtbar, auch wenn man die Seite hochwischt */
@@ -1128,7 +1131,7 @@
         const opening = payOpen !== t.id;
         payOpen = opening ? t.id : null;
         box.querySelectorAll(".pay-item").forEach(el => el.classList.toggle("open", el === item && opening));
-        if (opening) { inp.value = ""; payHint(item, t); inp.focus({ preventScroll: true }); }
+        if (opening) { inp.value = ""; payHint(item, t); $("paySheet").classList.add("typing"); inp.focus({ preventScroll: true }); }
         else inp.blur();
       };
       inp.addEventListener("input", () => payHint(item, t));
@@ -1149,7 +1152,11 @@
       box.appendChild(item);
     });
   }
-  $("payBtn").onclick = () => { payOpen = null; renderPay(); show($("paySheet")); };
+  $("payList").addEventListener("focusin", (e) => { if (e.target.matches("input")) $("paySheet").classList.add("typing"); });
+  $("payList").addEventListener("focusout", () => setTimeout(() => {
+    if (!(document.activeElement && document.activeElement.matches("#payList input"))) $("paySheet").classList.remove("typing");
+  }, 120));
+  $("payBtn").onclick = () => { $("paySheet").classList.remove("typing"); payOpen = null; renderPay(); show($("paySheet")); };
 
   // ---------- Einstellungen ----------
   function renderThemeList() {
@@ -1186,7 +1193,7 @@
   function onKeyboard() {
     const vv = window.visualViewport;
     if (!vv) return;
-    const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+    const kb = Math.max(0, Math.round(window.innerHeight - vv.height - (vv.pageTop != null ? vv.pageTop : vv.offsetTop)));
     document.documentElement.style.setProperty("--kb", (kb > 80 ? kb : 0) + "px");
     if (kb <= 80) window.scrollTo(0, 0);
   }
