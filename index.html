@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Tally</title>
+<script>try{var t=localStorage.getItem("tally.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -31,8 +32,25 @@
     --sheet: #FFFFFF;
     --dim: rgba(0,0,0,.35);
   }
+  :root[data-theme="dark"] {
+      --bg: #000000;
+      --card: #1C1C1E;
+      --label: #FFFFFF;
+      --label2: rgba(235,235,245,.6);
+      --label3: rgba(235,235,245,.3);
+      --sep: rgba(84,84,88,.6);
+      --fill: rgba(118,118,128,.24);
+      --blue: #0A84FF;
+      --red: #FF453A;
+      --green: #30D158;
+      --bar: rgba(22,22,24,.82);
+    --dockbg: rgba(0,0,0,.82);
+      --tally: #F2F2F7;
+      --sheet: #2C2C2E;
+      --dim: rgba(0,0,0,.55);
+  }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #000000;
       --card: #1C1C1E;
       --label: #FFFFFF;
@@ -77,10 +95,23 @@
   .status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--label3); }
   .status.ok .dot { background: var(--green); }
   .more {
-    width: 34px; height: 34px; border-radius: 50%; background: var(--fill);
-    display: grid; place-items: center; margin-bottom: 4px; color: var(--blue);
+    width: 44px; height: 44px; border-radius: 50%; background: var(--blue);
+    display: grid; place-items: center; margin-bottom: 0; color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+    transition: transform .12s;
   }
-  .more svg { width: 18px; height: 18px; }
+  .more:active { transform: scale(.92); }
+  .hbtns { display: flex; align-items: center; gap: 10px; }
+  .gear {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--fill); color: var(--label);
+    display: grid; place-items: center; transition: transform .12s;
+  }
+  .gear:active { transform: scale(.92); }
+  .gear svg { width: 22px; height: 22px; }
+  .section-label { font-size: 13px; color: var(--label2); text-transform: uppercase; letter-spacing: .3px; margin: 2px 6px 8px; }
+  .row .check { margin-left: auto; width: 20px; height: 20px; color: var(--blue); visibility: hidden; }
+  .row.sel .check { visibility: visible; }
+  .more svg { width: 22px; height: 22px; }
 
   /* Tabs */
   .tabs {
@@ -183,7 +214,61 @@
     transition: transform .32s cubic-bezier(.32,.72,0,1), visibility 0s linear .32s;
   }
   .sheet.show { transform: none; visibility: visible; pointer-events: auto; transition: transform .32s cubic-bezier(.32,.72,0,1), visibility 0s; }
-  .group { background: var(--sheet); border-radius: 14px; overflow: hidden; }
+  .group { background: var(--sheet); border-radius: 28px; overflow: hidden; }
+  /* iOS-26-Menü beim Antippen eines Tabs */
+  .panel { padding: 18px 16px 16px; border-radius: 32px; }
+  .panel .form-head { margin-bottom: 14px; }
+  .panel .form-head h2 { flex: 1; min-width: 0; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 8px; }
+  .spacer { width: 40px; flex: none; }
+  .list { background: var(--fill); border-radius: 20px; overflow: hidden; }
+  .list + .list { margin-top: 10px; }
+  .row {
+    display: flex; align-items: center; gap: 14px; width: 100%; height: 52px; padding: 0 18px;
+    font-size: 17px; color: var(--label); text-align: left;
+    border-top: .5px solid var(--sep);
+  }
+  .row:first-child { border-top: 0; }
+  .row:active { background: var(--fill); }
+  .row svg { width: 22px; height: 22px; flex: none; color: var(--blue); }
+  .row.destructive, .row.destructive svg { color: var(--red); }
+  .row .row-val { margin-left: auto; color: var(--label2); font-variant-numeric: tabular-nums; }
+
+  /* Legende: was ein Strich wert ist */
+  .legend {
+    align-self: flex-start; margin-top: 8px;
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 26px; padding: 0 11px 0 9px; border-radius: 13px;
+    background: var(--fill); color: var(--label2);
+    font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums;
+  }
+  .legend svg { width: 8px; height: 16px; }
+  .legend line { stroke: var(--tally); stroke-width: 2.6; stroke-linecap: round; }
+  .legend:active { opacity: .6; }
+
+  /* Wert-Pop-up */
+  /* Drehrad wie in der Uhr-App */
+  .picker { position: relative; height: 216px; display: flex; justify-content: center; gap: 8px; }
+  .picker-band {
+    position: absolute; left: 0; right: 0; top: 90px; height: 36px;
+    background: var(--fill); border-radius: 10px; pointer-events: none;
+  }
+  .picker-col { position: relative; display: flex; align-items: center; z-index: 1; }
+  .wheel {
+    width: 92px; height: 216px; overflow-y: scroll; scrollbar-width: none;
+    scroll-snap-type: y mandatory; overscroll-behavior: contain;
+    padding: 90px 0; box-sizing: border-box; perspective: 420px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30%, #000 70%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 30%, #000 70%, transparent 100%);
+    touch-action: pan-y;
+  }
+  .wheel::-webkit-scrollbar { display: none; }
+  .wi {
+    height: 36px; line-height: 36px; scroll-snap-align: center;
+    text-align: right; padding-right: 4px;
+    font-size: 23px; font-weight: 500; color: var(--label); font-variant-numeric: tabular-nums;
+    transform-origin: center center; will-change: transform, opacity;
+  }
+  .wheel-unit { width: 34px; font-size: 17px; font-weight: 600; color: var(--label); padding-left: 4px; }
   .group + .group { margin-top: 8px; }
   .action {
     display: block; width: 100%; height: 57px; font-size: 20px; color: var(--blue); text-align: center;
@@ -203,6 +288,14 @@
   .form-head button.done { font-weight: 600; text-align: right; }
   .form-head button.cancel { text-align: left; }
   .form-head button:disabled { color: var(--label3); }
+  .form-head .icon-btn {
+    width: 40px; height: 40px; min-width: 0; border-radius: 50%; flex: none;
+    display: grid; place-items: center; transition: transform .12s;
+  }
+  .form-head .icon-btn:active { transform: scale(.9); }
+  .form-head .icon-btn svg { width: 20px; height: 20px; }
+  .form-head .icon-btn.x { background: var(--fill); color: var(--label); }
+  .form-head .icon-btn.ok { background: var(--blue); color: #fff; }
   .input {
     width: 100%; height: 44px; border-radius: 10px; border: 0; outline: 0;
     background: var(--fill); color: var(--label); padding: 0 14px; font: inherit; font-size: 17px;
@@ -221,9 +314,12 @@
 <div class="app">
   <header>
     <h1>Tally</h1>
-    <button class="more" id="addBtn" aria-label="Tab hinzufügen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
+    <div class="hbtns">
+      <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <button class="more" id="addBtn" aria-label="Tab hinzufügen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
   </header>
   <div class="status" id="status"><span class="dot"></span><span id="statusText">Wird geladen…</span></div>
 
@@ -234,6 +330,7 @@
       <div class="tab-name" id="tabName"></div>
       <div class="count" id="count"></div>
     </div>
+    <button type="button" class="legend" id="legend" aria-label="Wert pro Strich ändern"></button>
     <div class="tally" id="tally"></div>
   </section>
 
@@ -241,11 +338,11 @@
   <div class="clicker-wrap">
     <button class="minus" id="minus" aria-label="Strich entfernen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>
-      <span>10 €</span>
+      <span class="val">10 €</span>
     </button>
     <button class="clicker" id="clicker" aria-label="Strich hinzufügen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      <span>10 €</span>
+      <span class="val">10 €</span>
     </button>
   </div>
   <div class="sumbar-inner">
@@ -263,16 +360,42 @@
 
 <!-- Aktionen -->
 <div class="sheet" id="actionSheet">
-  <div class="group">
-    <div class="sheet-title"><b id="actionTitle"></b>Tab bearbeiten</div>
-    <button class="action" data-act="rename">Name &amp; Farbe ändern</button>
-    <button class="action destructive" data-act="delete">Tab löschen</button>
+  <div class="group panel">
+    <div class="form-head">
+      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      <h2 id="actionTitle"></h2>
+      <span class="spacer"></span>
+    </div>
+    <div class="list">
+      <button class="row" data-act="rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg><span>Name &amp; Farbe ändern</span></button>
+      <button class="row" data-act="value"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.6a4 4 0 1 0 0 6.8M7.5 11h6M7.5 13.4h6"/></svg><span>Wert pro Strich</span><span class="row-val" id="rowVal"></span></button>
+    </div>
+    <div class="list">
+      <button class="row" data-act="export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/></svg><span>Daten exportieren</span></button>
+      <button class="row" data-act="import"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M6 13v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"/></svg><span>Daten importieren</span></button>
+    </div>
+    <div class="list">
+      <button class="row destructive" data-act="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg><span>Tab löschen</span></button>
+    </div>
   </div>
-  <div class="group">
-    <button class="action" data-act="export">Daten exportieren</button>
-    <button class="action" data-act="import">Daten importieren</button>
+</div>
+
+<!-- Einstellungen -->
+<div class="sheet" id="settingsSheet">
+  <div class="group panel">
+    <div class="form-head">
+      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      <h2>Einstellungen</h2>
+      <span class="spacer"></span>
+    </div>
+    <p class="section-label">Darstellung</p>
+    <div class="list" id="themeList">
+      <button class="row" data-theme-opt="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg><span>Automatisch</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.</p>
   </div>
-  <div class="group"><button class="action bold" data-act="cancel">Abbrechen</button></div>
 </div>
 
 <!-- Bestätigen -->
@@ -289,7 +412,7 @@
   <div class="group">
     <div class="form">
       <div class="form-head">
-        <button type="button" class="cancel" data-close>Abbrechen</button>
+        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
         <h2 id="dataTitle">Exportieren</h2>
         <button type="button" class="done" id="dataBtn">Kopieren</button>
       </div>
@@ -299,14 +422,33 @@
   </div>
 </div>
 
+<!-- Wert pro Strich -->
+<div class="sheet" id="valueSheet">
+  <div class="group">
+    <form class="form" id="valueForm" autocomplete="off">
+      <div class="form-head">
+        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+        <h2>Wert pro Strich</h2>
+        <button type="submit" class="icon-btn ok" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      </div>
+      <div class="picker">
+        <div class="picker-band"></div>
+        <div class="picker-col"><div class="wheel" id="wheelEuro" aria-label="Euro"></div><div class="wheel-unit">€</div></div>
+        <div class="picker-col"><div class="wheel" id="wheelCent" aria-label="Cent"></div><div class="wheel-unit">ct</div></div>
+      </div>
+      <p class="hint" id="valueHint"></p>
+    </form>
+  </div>
+</div>
+
 <!-- Name eingeben -->
 <div class="sheet" id="nameSheet">
   <div class="group">
     <form class="form" id="nameForm" autocomplete="off">
       <div class="form-head">
-        <button type="button" class="cancel" data-close>Abbrechen</button>
+        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
         <h2 id="nameTitle">Neuer Tab</h2>
-        <button type="submit" class="done" id="nameDone">Fertig</button>
+        <button type="submit" class="icon-btn ok" id="nameDone" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       </div>
       <input class="input" id="nameInput" maxlength="40" placeholder="Name" enterkeyhint="done">
       <div class="colors" id="colors"></div>
@@ -320,8 +462,12 @@
   const VALUE = 10;
   const LS_KEY = "geldzaehler.v1";
   const $ = (id) => document.getElementById(id);
-  const fmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
-  const euro = (n) => fmt.format(n) + " €";
+  const fmt0 = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
+  const fmt2 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const num = (n) => { n = Math.round(n * 100) / 100; return Number.isInteger(n) ? fmt0.format(n) : fmt2.format(n); };
+  const euro = (n) => num(n) + " €";
+  // Wert eines Strichs pro Tab (Standard 10 €)
+  const valOf = (t) => (Number(t && t.value) > 0 ? Number(t.value) : VALUE);
   const uid = () => Math.random().toString(36).slice(2, 10);
 
   // Apple-Systemfarben: [hell, dunkel, Textfarbe darauf]
@@ -339,7 +485,16 @@
   };
   const darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
   const colorOf = (key) => COLORS[key] || COLORS.blue;
-  const hexOf = (key) => colorOf(key)[darkMQ.matches ? 1 : 0];
+  // Darstellung: "auto" | "light" | "dark" (nur auf diesem Gerät gespeichert)
+  let theme = "auto";
+  try { const t = localStorage.getItem("tally.theme"); if (t === "light" || t === "dark") theme = t; } catch (e) {}
+  const isDark = () => theme === "dark" || (theme === "auto" && darkMQ.matches);
+  const hexOf = (key) => colorOf(key)[isDark() ? 1 : 0];
+  function applyTheme() {
+    if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", theme);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute("content", isDark() ? "#000000" : "#F2F2F7"));
+  }
   function applyAccent(key) {
     const hex = hexOf(key), r = document.documentElement.style;
     r.setProperty("--accent", hex);
@@ -450,8 +605,12 @@
     $("minus").disabled = tab.count === 0;
 
     // Summe
-    $("sum").textContent = euro(tab.count * VALUE);
-    const total = state.tabs.reduce((a, t) => a + t.count, 0) * VALUE;
+    $("sum").textContent = euro(tab.count * valOf(tab));
+    const total = state.tabs.reduce((a, t) => a + t.count * valOf(t), 0);
+    document.querySelectorAll(".val").forEach(el => el.textContent = euro(valOf(tab)));
+    $("legend").innerHTML = '<svg viewBox="0 0 8 16" aria-hidden="true"><line x1="4" y1="2" x2="4" y2="14"></line></svg>';
+    $("legend").appendChild(document.createTextNode("= " + euro(valOf(tab))));
+    $("rowVal").textContent = euro(valOf(tab));
     $("sumAll").textContent = state.tabs.length > 1 ? "Alle Tabs: " + euro(total) : tab.name;
   }
 
@@ -512,6 +671,7 @@
     if (!act) return;
     if (act === "cancel") return hide();
     if (act === "rename") return openName("rename");
+    if (act === "value") return openValue();
     if (act === "export") return openData("export");
     if (act === "import") return openData("import");
     if (act === "delete") {
@@ -528,7 +688,7 @@
   // ---------- Daten exportieren / importieren ----------
   function exportCode() {
     const json = JSON.stringify({
-      tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue" })),
+      tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t) })),
       activeId: state.activeId,
     });
     return "TALLY1:" + btoa(unescape(encodeURIComponent(json)));
@@ -584,12 +744,64 @@
         id: String(t.id), name: String(t.name).slice(0, 40),
         count: Math.max(0, Math.floor(Number(t.count) || 0)),
         color: COLORS[t.color] ? t.color : "blue",
+        value: Number(t.value) > 0 ? Math.round(Number(t.value) * 100) / 100 : VALUE,
       }));
       state = { tabs, activeId: tabs.some(t => t.id === d.activeId) ? d.activeId : tabs[0].id, updatedAt: 0 };
       lastAdded = -1;
       commit();
     });
   };
+
+  // ---------- Wert pro Strich ----------
+  const ROW = 36, EURO_MAX = 1000;
+  function buildWheel(el, count, label) {
+    el.textContent = "";
+    for (let i = 0; i < count; i++) {
+      const d = document.createElement("div");
+      d.className = "wi"; d.textContent = label(i);
+      el.appendChild(d);
+    }
+    let raf = 0;
+    el.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; paintWheel(el); }); }, { passive: true });
+  }
+  function paintWheel(el) {
+    const c = el.scrollTop / ROW, kids = el.children;
+    const from = Math.max(0, Math.floor(c) - 4), to = Math.min(kids.length - 1, Math.ceil(c) + 4);
+    for (let i = from; i <= to; i++) {
+      const d = i - c, a = Math.abs(d);
+      kids[i].style.transform = "rotateX(" + (-d * 20) + "deg) scale(" + (1 - Math.min(a, 3) * 0.04) + ")";
+      kids[i].style.opacity = String(Math.max(0.2, 1 - a * 0.28));
+    }
+  }
+  const wheelIdx = (el) => Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollTop / ROW)));
+  function setWheel(el, i) { el.scrollTop = i * ROW; paintWheel(el); }
+  buildWheel($("wheelEuro"), EURO_MAX + 1, i => String(i));
+  buildWheel($("wheelCent"), 100, i => String(i).padStart(2, "0"));
+  const valueInfo = (t) => "Gilt nur für „" + t.name + "“. Die Summe wird mit dem neuen Wert neu berechnet.";
+  function openValue() {
+    const t = active(), v = valOf(t);
+    const e = Math.min(EURO_MAX, Math.floor(v + 1e-9)), c = Math.round((v - e) * 100);
+    $("valueHint").textContent = valueInfo(t);
+    $("valueHint").classList.remove("err");
+    show($("valueSheet"));
+    setWheel($("wheelEuro"), e); setWheel($("wheelCent"), c);
+    requestAnimationFrame(() => { setWheel($("wheelEuro"), e); setWheel($("wheelCent"), c); });
+  }
+  $("legend").onclick = openValue;
+  ["wheelEuro", "wheelCent"].forEach(id => $(id).addEventListener("scroll", () => {
+    if ($("valueHint").classList.contains("err")) { $("valueHint").textContent = valueInfo(active()); $("valueHint").classList.remove("err"); }
+  }, { passive: true }));
+  $("valueForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = Math.round((wheelIdx($("wheelEuro")) + wheelIdx($("wheelCent")) / 100) * 100) / 100;
+    if (!(v > 0)) {
+      $("valueHint").textContent = "Ein Strich muss mehr als 0 € wert sein.";
+      $("valueHint").classList.add("err");
+      return;
+    }
+    active().value = v;
+    hide(); commit(); bumpSum();
+  });
 
   let confirmFn = null;
   function confirmAction(text, label, fn) {
@@ -627,7 +839,7 @@
     $("nameTitle").textContent = mode === "new" ? "Neuer Tab" : "Bearbeiten";
     $("nameInput").value = mode === "new" ? "" : active().name;
     $("nameInput").placeholder = mode === "new" ? "Tab " + (state.tabs.length + 1) : "Name";
-    $("nameDone").textContent = mode === "new" ? "Hinzufügen" : "Fertig";
+    $("nameDone").setAttribute("aria-label", mode === "new" ? "Hinzufügen" : "Fertig");
     show($("nameSheet"));
     setTimeout(() => { const i = $("nameInput"); i.focus(); i.select(); }, 60);
   }
@@ -727,7 +939,19 @@
     }
   }
 
-  darkMQ.addEventListener && darkMQ.addEventListener("change", render);
+  darkMQ.addEventListener && darkMQ.addEventListener("change", () => { applyTheme(); render(); });
+
+  // ---------- Einstellungen ----------
+  function renderThemeList() {
+    document.querySelectorAll("[data-theme-opt]").forEach(b => b.classList.toggle("sel", b.dataset.themeOpt === theme));
+  }
+  $("settingsBtn").onclick = () => { renderThemeList(); show($("settingsSheet")); };
+  document.querySelectorAll("[data-theme-opt]").forEach(b => b.onclick = () => {
+    theme = b.dataset.themeOpt;
+    try { if (theme === "auto") localStorage.removeItem("tally.theme"); else localStorage.setItem("tally.theme", theme); } catch (e) {}
+    applyTheme(); renderThemeList(); render();
+  });
+  applyTheme();
 
   // Sichtbare Höhe bestimmen. In der Claude-App auf dem iPhone ist das Fenster
   // der App höher als der sichtbare Bereich (die Leiste oben schiebt es nach unten).
@@ -754,7 +978,7 @@
   }, { passive: true });
   document.addEventListener("touchmove", (e) => {
     if (e.touches.length > 1) return;
-    if (e.target.closest && e.target.closest("textarea")) return;
+    if (e.target.closest && e.target.closest("textarea, .wheel")) return;
     const t = e.touches[0];
     const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
     const tally = e.target.closest && e.target.closest(".tally");
