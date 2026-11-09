@@ -220,11 +220,11 @@
   }
   .overlay.show { opacity: 1; pointer-events: auto; }
   .sheet {
-    position: fixed; left: 0; right: 0; bottom: var(--hide-b, 0px); z-index: 21;
+    position: fixed; left: 0; right: 0; bottom: calc(var(--hide-b, 0px) + var(--kb, 0px)); z-index: 21;
     max-width: 560px; margin: 0 auto;
     padding: 0 var(--gap) var(--gap);
     /* Geschlossen: ganz aus dem Bild und unsichtbar, auch wenn man die Seite hochwischt */
-    transform: translate3d(0, calc(100% + var(--hide-b, 0px) + 40px), 0);
+    transform: translate3d(0, calc(100% + var(--hide-b, 0px) + var(--kb, 0px) + 40px), 0);
     visibility: hidden; pointer-events: none; will-change: transform;
     transition: transform .36s var(--spring), visibility 0s linear .36s;
   }
@@ -1038,7 +1038,9 @@
     let avail = ih;
     const sh = (window.screen && screen.height) || 0;
     const portrait = !window.matchMedia || window.matchMedia("(orientation: portrait)").matches;
-    const vv = window.visualViewport ? window.visualViewport.height : ih; avail = Math.min(ih, vv || ih); if (sh > 0 && portrait) avail = Math.min(avail, !STANDALONE ? sh - 120 : (navigator.standalone ? sh : sh - 140));
+    // Nicht die Tastatur-Höhe verwenden (sonst bleiben die Pop-ups nach dem Tippen zu hoch hängen)
+    const homeApp = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    if (sh > 0 && portrait) avail = Math.min(avail, !STANDALONE ? sh - 120 : (homeApp ? sh : sh - 140));
     avail = Math.max(420, Math.round(avail));
     const r = document.documentElement.style;
     r.setProperty("--app-h", avail + "px");
@@ -1046,6 +1048,20 @@
   }
   fitApp();
   window.addEventListener("resize", fitApp);
+
+  // Tastatur: Pop-up sitzt direkt darüber; danach alles wieder an die richtige Stelle
+  function onKeyboard() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+    document.documentElement.style.setProperty("--kb", (kb > 80 ? kb : 0) + "px");
+    if (kb <= 80) window.scrollTo(0, 0);
+  }
+  if (window.visualViewport) {
+    visualViewport.addEventListener("resize", onKeyboard);
+    visualViewport.addEventListener("scroll", onKeyboard);
+  }
+  document.addEventListener("focusout", () => setTimeout(() => { onKeyboard(); window.scrollTo(0, 0); }, 60));
 
   let devR = 55;
   // Eckenradius des iPhone-Displays (Punkte), damit die Pop-ups genau parallel zu den Ecken laufen
