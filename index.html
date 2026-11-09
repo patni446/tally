@@ -95,19 +95,19 @@
   .status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--label3); }
   .status.ok .dot { background: var(--green); }
   .more {
-    width: 50px; height: 50px; border-radius: 50%; background: var(--blue);
+    width: 58px; height: 58px; border-radius: 50%; background: var(--blue);
     display: grid; place-items: center; margin-bottom: 0; color: #fff;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
     transition: transform .32s var(--bounce);
   }
   .more:active { transform: scale(.88); transition-duration: .08s; }
-  .hbtns { display: flex; align-items: center; gap: 10px; }
+  .hbtns { display: flex; align-items: center; gap: 12px; }
   .gear {
-    width: 50px; height: 50px; border-radius: 50%; background: var(--fill); color: var(--label);
+    width: 58px; height: 58px; border-radius: 50%; background: var(--fill); color: var(--label);
     display: grid; place-items: center; transition: transform .32s var(--bounce), background .3s;
   }
   .gear:active { transform: scale(.88); transition-duration: .08s; }
-  .gear svg { width: 25px; height: 25px; }
+  .gear svg { width: 28px; height: 28px; }
   /* Abrechnen */
   .pay-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .pay-item + .pay-item { border-top: .5px solid var(--sep); }
@@ -153,7 +153,7 @@
   .section-label { font-size: 13px; color: var(--label2); text-transform: uppercase; letter-spacing: .3px; margin: 2px 6px 8px; }
   .row .check { margin-left: auto; width: 20px; height: 20px; color: var(--blue); visibility: hidden; }
   .row.sel .check { visibility: visible; }
-  .more svg { width: 27px; height: 27px; }
+  .more svg { width: 31px; height: 31px; }
 
   /* Tabs */
   .tabs {
@@ -272,7 +272,7 @@
     /* Geschlossen: ganz aus dem Bild und unsichtbar, auch wenn man die Seite hochwischt */
     transform: translate3d(0, calc(100% + var(--hide-b, 0px) + var(--kb, 0px) + 40px), 0);
     visibility: hidden; pointer-events: none; will-change: transform;
-    transition: transform .36s var(--spring), visibility 0s linear .36s;
+    transition: transform .36s var(--spring), bottom .36s var(--spring), visibility 0s linear .36s;
   }
   .sheet.show { transform: translate3d(0, 0, 0); visibility: visible; pointer-events: auto; transition: transform .5s var(--spring), bottom .4s var(--spring), visibility 0s; }
   .sheet.dragging { transition: none !important; }
@@ -489,7 +489,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #6</p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #7</p>
   </div>
 </div>
 
@@ -760,7 +760,8 @@
     $("overlay").classList.remove("show");
     if (openSheet) openSheet.classList.remove("show");
     openSheet = null;
-    $("nameInput").blur();
+    const a = document.activeElement;
+    if (a && a.blur && a.closest && a.closest(".sheet")) a.blur();
   }
   $("overlay").onclick = hide;
   document.querySelectorAll("[data-close]").forEach(b => b.onclick = hide);
@@ -1168,6 +1169,7 @@
   }
   $("payList").addEventListener("focusin", (e) => { if (e.target.matches("input")) $("paySheet").classList.add("typing"); });
   $("payList").addEventListener("focusout", () => setTimeout(() => {
+    if (!$("paySheet").classList.contains("show")) return; // beim Schließen nichts mehr umbauen
     if (!(document.activeElement && document.activeElement.matches("#payList input"))) $("paySheet").classList.remove("typing");
   }, 120));
   $("payBtn").onclick = () => { $("paySheet").classList.remove("typing"); payOpen = null; renderPay(); show($("paySheet")); };
@@ -1236,7 +1238,7 @@
   }
   document.addEventListener("focusin", (e) => {
     const el = e.target;
-    if (!el || !el.matches || !el.matches(".sheet input, .sheet textarea")) return;
+    if (!el || !el.matches || !el.matches("#paySheet input")) return; // nur beim Abrechnen vorab anheben
     const vv = window.visualViewport;
     if (vv && window.innerHeight - vv.height > 80) return; // Tastatur ist schon offen
     kbExpect = Date.now() + 1200;
