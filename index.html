@@ -26,6 +26,7 @@
     --blue: #007AFF;
     --red: #FF3B30;
     --green: #34C759;
+    --orange: #FF9500;
     --bar: rgba(249,249,249,.82);
     --dockbg: rgba(242,242,247,.86);
     --tally: #1C1C1E;
@@ -43,6 +44,7 @@
       --blue: #0A84FF;
       --red: #FF453A;
       --green: #30D158;
+      --orange: #FF9F0A;
       --bar: rgba(22,22,24,.82);
     --dockbg: rgba(0,0,0,.82);
       --tally: #F2F2F7;
@@ -61,6 +63,7 @@
       --blue: #0A84FF;
       --red: #FF453A;
       --green: #30D158;
+      --orange: #FF9F0A;
       --bar: rgba(22,22,24,.82);
     --dockbg: rgba(0,0,0,.82);
       --tally: #F2F2F7;
@@ -112,7 +115,7 @@
   .pay-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .pay-item + .pay-item { border-top: .5px solid var(--sep); }
   .pay-item .row { border-top: 0; }
-  .pay-row .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; margin: 0 6px; }
+  .pay-row .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; margin: 0 2px 0 4px; }
   .pay-row .pay-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pay-row .row-val { margin-left: 0; }
   .pay-row .chev { width: 14px; height: 14px; color: var(--label3); flex: none; transition: transform .35s var(--spring); }
@@ -187,9 +190,26 @@
     display: flex; flex-wrap: wrap; gap: 10px 14px; align-content: flex-start;
   }
   .tally svg { width: 52px; height: 46px; flex: none; scroll-margin: 6px; }
-  .tally line { stroke: var(--tally); stroke-width: 3.2; stroke-linecap: round; }
-  .tally line.new { stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .22s ease-out forwards; }
-  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .tally line { stroke: var(--tally); stroke-width: 3.8; stroke-linecap: round; }
+  .tally line.half { stroke: var(--orange); }
+  /* Neu: Strich zeichnet sich grün und wird dann normal */
+  .tally line.new { stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .75s ease-out forwards; }
+  @keyframes draw {
+    0% { stroke-dashoffset: 60; stroke: var(--green); }
+    30% { stroke-dashoffset: 0; stroke: var(--green); }
+    55% { stroke-dashoffset: 0; stroke: var(--green); }
+    100% { stroke-dashoffset: 0; stroke: var(--tally); }
+  }
+  .tally line.half.new { animation-name: drawHalf; }
+  @keyframes drawHalf { 0% { stroke-dashoffset: 60; } 40%, 100% { stroke-dashoffset: 0; } }
+  /* Weg: dieselbe Animation rückwärts – erst rot, dann zieht sich der Strich zurück */
+  .tally line.out { stroke-dasharray: 60; stroke-dashoffset: 0; animation: undraw .55s ease-in forwards; }
+  @keyframes undraw {
+    0% { stroke-dashoffset: 0; stroke: var(--tally); }
+    30% { stroke-dashoffset: 0; stroke: var(--red); }
+    100% { stroke-dashoffset: 60; stroke: var(--red); }
+  }
+  .tally svg.half-svg { width: 14px; }
   .tally.swap > * { animation: swapIn .28s var(--spring) both; }
   @keyframes swapIn { from { opacity: 0; transform: translate3d(0, 6px, 0); } to { opacity: 1; transform: none; } }
   .card-head, .legend { transition: opacity .2s; }
@@ -232,14 +252,15 @@
     content: ""; position: absolute; inset: -5px; border-radius: 50%;
     border: 2.5px solid var(--label2);
   }
-  .chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+  /* Wie in der Dynamic Island: Punkt sitzt mittig im runden Ende, überall gleich weit vom Rand (10 px) */
+  .chip.dotted { display: inline-flex; align-items: center; padding-left: 10px; }
+  .chip .dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; }
 
   /* Unten fixiert: Klicker + Summe */
   .dock {
     flex: none; margin: 14px -16px 0;
     background: var(--dockbg);
     -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
-    border-top: .5px solid var(--sep);
     padding: 0 20px calc(env(safe-area-inset-bottom) + 30px);
   }
   .sumbar-inner { max-width: 520px; margin: 0 auto; border-top: .5px solid var(--sep); padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -316,7 +337,9 @@
     font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums;
   }
   .legend svg { width: 8px; height: 16px; }
-  .legend line { stroke: var(--tally); stroke-width: 2.6; stroke-linecap: round; }
+  .legend line { stroke: var(--tally); stroke-width: 3; stroke-linecap: round; }
+  .legend line.half { stroke: var(--orange); }
+  .legend .lsep { width: 1px; height: 12px; background: var(--sep); margin: 0 3px; }
   .legend:active { opacity: .6; }
 
   /* Wert-Pop-up */
@@ -389,7 +412,7 @@
 <body>
 <div class="app">
   <header>
-    <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill-rule="evenodd" d="M9.84 4.19 L10.18 2.17 L13.82 2.17 L14.16 4.19 L15.99 4.95 L17.66 3.76 L20.24 6.34 L19.05 8.01 L19.81 9.84 L21.83 10.18 L21.83 13.82 L19.81 14.16 L19.05 15.99 L20.24 17.66 L17.66 20.24 L15.99 19.05 L14.16 19.81 L13.82 21.83 L10.18 21.83 L9.84 19.81 L8.01 19.05 L6.34 20.24 L3.76 17.66 L4.95 15.99 L4.19 14.16 L2.17 13.82 L2.17 10.18 L4.19 9.84 L4.95 8.01 L3.76 6.34 L6.34 3.76 L8.01 4.95Z M16.10 12 A4.1 4.1 0 1 0 7.90 12 A4.1 4.1 0 1 0 16.10 12Z"/></svg></button>
     <div class="hbtns">
       <button class="gear" id="payBtn" aria-label="Abrechnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 7.5V6a1.5 1.5 0 0 0-1.5-1.5H6A2.5 2.5 0 0 0 3.5 7v10A2.5 2.5 0 0 0 6 19.5h12a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 18 7.5H6"/><path d="M16.5 13.75h.01" stroke-width="3"/></svg></button>
       <button class="more" id="addBtn" aria-label="Tab hinzufügen">
@@ -462,7 +485,7 @@
     <div class="form-head">
       <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
       <h2>Abrechnen</h2>
-      <span class="spacer"></span>
+      <button type="button" class="icon-btn ok" id="payDone" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 12.8l5.6 5.6L20.4 6"/></svg></button>
     </div>
     <p class="section-label">Betrag abziehen</p>
     <div class="list pay-list" id="payList"></div>
@@ -484,7 +507,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #9<br><span id="diag"></span></p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #17<br><span id="diag"></span></p>
   </div>
 </div>
 
@@ -619,7 +642,7 @@
   const active = () => state.tabs.find(t => t.id === state.activeId) || state.tabs[0];
 
   // ---------- Render ----------
-  function tallyGroup(n, startIndex) {
+  function tallyGroup(n, startIndex, outFrom = Infinity) {
     const ns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(ns, "svg");
     svg.setAttribute("viewBox", "0 0 52 46");
@@ -629,6 +652,7 @@
       l.setAttribute("x1", xs[i]); l.setAttribute("x2", xs[i]);
       l.setAttribute("y1", 5); l.setAttribute("y2", 41);
       if (startIndex + i === lastAdded) l.classList.add("new");
+      if (startIndex + i >= outFrom) l.classList.add("out");
       svg.appendChild(l);
     }
     if (n === 5) {
@@ -636,10 +660,33 @@
       l.setAttribute("x1", 2); l.setAttribute("y1", 34);
       l.setAttribute("x2", 46); l.setAttribute("y2", 12);
       if (startIndex + 4 === lastAdded) l.classList.add("new");
+      if (startIndex + 4 >= outFrom) l.classList.add("out");
       svg.appendChild(l);
     }
     return svg;
   }
+  // Halber, oranger Strich für den Rest, der keinen ganzen Strich ergibt (z. B. Cent)
+  function halfStroke(cls) {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 14 46");
+    svg.classList.add("half-svg");
+    const l = document.createElementNS(ns, "line");
+    l.setAttribute("x1", 7); l.setAttribute("x2", 7);
+    l.setAttribute("y1", 41); l.setAttribute("y2", 23);
+    l.setAttribute("class", "half" + (cls ? " " + cls : ""));
+    svg.appendChild(l);
+    return svg;
+  }
+  // Ganze Striche + Rest aus dem Betrag
+  function strokesOf(t) {
+    const total = moneyOf(t), val = valOf(t);
+    const full = Math.floor(total / val + 1e-9);
+    let rest = Math.round((total - full * val) * 100) / 100;
+    if (rest < 0.005) rest = 0;
+    return { full, rest };
+  }
+  let shown = { id: null, full: 0, rest: 0 }, fadeNext = false, fadeT = 0, halfLater = false;
 
   function render() {
     const tab = active();
@@ -651,7 +698,7 @@
     state.tabs.forEach(t => {
       const b = document.createElement("button");
       const isActive = t.id === tab.id;
-      b.className = "chip" + (isActive ? " active" : "");
+      b.className = "chip" + (isActive ? " active" : " dotted");
       if (!isActive) {
         const d = document.createElement("span");
         d.className = "dot";
@@ -676,27 +723,42 @@
 
     // Karte
     $("tabName").textContent = tab.name;
-    $("count").textContent = (tab.count === 1 ? "1 Strich" : tab.count + " Striche") +
-      (tab.count && tab.off ? " − " + euro(-tab.off) : "");
+    const st = strokesOf(tab);
+    $("count").textContent = (st.full === 1 ? "1 Strich" : st.full + " Striche") + (st.rest ? " + " + euro(st.rest) : "");
     const tally = $("tally");
     tally.textContent = "";
     tally.classList.toggle("swap", swapping);
-    swapping = false;
-    if (tab.count === 0) {
+    // Weggenommene Striche erst rückwärts animieren, dann entfernen
+    const same = shown.id === tab.id && !swapping && fadeNext;
+    const drawn = same ? Math.max(st.full, shown.full) : st.full;
+    const halfOut = same && shown.rest > 0 && st.rest === 0;
+    let halfNew = st.rest > 0 && shown.id === tab.id && !swapping && shown.rest === 0;
+    if (halfLater && st.rest > 0) halfNew = true;
+    halfLater = false;
+    const fading = drawn > st.full || halfOut;
+    swapping = false; fadeNext = false;
+    shown = { id: tab.id, full: st.full, rest: st.rest };
+    clearTimeout(fadeT);
+    if (drawn === 0 && !st.rest && !halfOut) {
       const e = document.createElement("div");
       e.className = "empty";
       e.textContent = "Noch keine Striche – tippe auf den Knopf.";
       tally.appendChild(e);
     } else {
-      const full = Math.floor(tab.count / 5), rest = tab.count % 5;
-      for (let g = 0; g < full; g++) tally.appendChild(tallyGroup(5, g * 5));
-      if (rest) tally.appendChild(tallyGroup(rest, full * 5));
+      const groups = Math.floor(drawn / 5), r5 = drawn % 5;
+      for (let g = 0; g < groups; g++) tally.appendChild(tallyGroup(5, g * 5, st.full));
+      if (r5) tally.appendChild(tallyGroup(r5, groups * 5, st.full));
+      // Neuer halber Strich erst nach dem Wegnehmen, damit er gleich an der richtigen Stelle sitzt
+      if (st.rest && halfNew && drawn > st.full) halfLater = true;
+      else if (st.rest) tally.appendChild(halfStroke(halfNew ? "new" : ""));
+      else if (halfOut) tally.appendChild(halfStroke("out"));
       if (lastAdded >= 0 && tally.lastElementChild) {
         tally.lastElementChild.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
     }
+    if (fading) fadeT = setTimeout(() => { lastAdded = -1; render(); }, 560);
 
-    $("minus").disabled = tab.count === 0;
+    $("minus").disabled = moneyOf(tab) <= 0;
 
     // Summe
     $("sum").textContent = euro(moneyOf(tab));
@@ -704,6 +766,10 @@
     document.querySelectorAll(".val").forEach(el => el.textContent = euro(valOf(tab)));
     $("legend").innerHTML = '<svg viewBox="0 0 8 16" aria-hidden="true"><line x1="4" y1="2" x2="4" y2="14"></line></svg>';
     $("legend").appendChild(document.createTextNode("= " + euro(valOf(tab))));
+    if (st.rest) {
+      $("legend").insertAdjacentHTML("beforeend", '<span class="lsep"></span><svg viewBox="0 0 8 16" aria-hidden="true"><line class="half" x1="4" y1="14" x2="4" y2="8"></line></svg>');
+      $("legend").appendChild(document.createTextNode("= " + euro(st.rest)));
+    }
     $("rowVal").textContent = euro(valOf(tab));
     $("sumAll").textContent = state.tabs.length > 1 ? "Alle Tabs: " + euro(total) : tab.name;
   }
@@ -727,7 +793,7 @@
 
   $("clicker").addEventListener("click", () => {
     const t = active();
-    lastAdded = t.count;
+    lastAdded = strokesOf(t).full;
     t.count += 1;
     commit();
     bumpSum();
@@ -738,6 +804,7 @@
     t.count -= 1;
     if (t.count === 0) t.off = 0;
     lastAdded = -1;
+    fadeNext = true;
     commit();
     bumpSum();
   });
@@ -1155,6 +1222,7 @@
         t.count = pl.count;
         t.off = pl.off;
         lastAdded = -1;
+        fadeNext = true;
         payOpen = null;
         $("paySheet").classList.remove("typing");
         item.classList.remove("open");
@@ -1173,6 +1241,13 @@
     if (!$("paySheet").classList.contains("show")) return; // beim Schließen nichts mehr umbauen
     if (!(document.activeElement && document.activeElement.matches("#payList input"))) $("paySheet").classList.remove("typing");
   }, 120));
+  // Haken: offenen Betrag übernehmen (falls eingegeben) und schließen
+  $("payDone").onclick = () => {
+    const f = document.querySelector("#payList .pay-item.open .pay-form");
+    const go = f && f.querySelector(".pay-go");
+    if (f && go && !go.disabled) f.dispatchEvent(new Event("submit", { cancelable: true }));
+    hide();
+  };
   $("payBtn").onclick = () => { $("paySheet").classList.remove("typing"); payOpen = null; renderPay(); show($("paySheet")); };
 
   // ---------- Einstellungen ----------
@@ -1250,6 +1325,11 @@
     if (!el || !el.matches || !el.matches("#paySheet input")) return; // nur beim Abrechnen vorab anheben
     const vv = window.visualViewport;
     if (vv && window.innerHeight - vv.height > 80) return; // Tastatur ist schon offen
+    // Nur als App vom Home-Bildschirm: Dort kann die App die Tastatur messen.
+    // In Claude (eingebettet) sieht die Seite die Tastatur nicht – dann nicht vorab anheben,
+    // sonst springt das Pop-up kurz hoch und wieder runter.
+    const homeApp = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    if (!homeApp) return;
     kbExpect = Date.now() + 1200;
     document.documentElement.style.setProperty("--kb", kbGuess() + "px");
     void document.body.offsetHeight;
