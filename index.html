@@ -1041,6 +1041,15 @@
   fitApp();
   window.addEventListener("resize", fitApp);
 
+  // Eckenradius des iPhone-Displays (Punkte), damit die Pop-ups genau parallel zu den Ecken laufen
+  (function deviceCorners() {
+    const w = Math.min(screen.width, screen.height), h = Math.max(screen.width, screen.height);
+    const R = { "402x874": 62, "440x956": 62, "420x912": 62, "393x852": 55, "430x932": 55,
+                "390x844": 47.33, "428x926": 53.33, "375x812": 39, "414x896": 41.5, "360x780": 44 };
+    const r = R[w + "x" + h];
+    if (r) document.documentElement.style.setProperty("--dev-r", r + "px");
+  })();
+
   // Wischen: nur die Strich-Tabelle scrollt hoch/runter, die Tab-Leiste nur seitwärts.
   // Alles andere bleibt stehen, damit die ganze Seite nicht mitwandert.
   let tStartX = 0, tStartY = 0;
