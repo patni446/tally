@@ -1041,14 +1041,53 @@
   fitApp();
   window.addEventListener("resize", fitApp);
 
+  let devR = 55;
   // Eckenradius des iPhone-Displays (Punkte), damit die Pop-ups genau parallel zu den Ecken laufen
   (function deviceCorners() {
     const w = Math.min(screen.width, screen.height), h = Math.max(screen.width, screen.height);
     const R = { "402x874": 62, "440x956": 62, "420x912": 62, "393x852": 55, "430x932": 55,
                 "390x844": 47.33, "428x926": 53.33, "375x812": 39, "414x896": 41.5, "360x780": 44 };
     const r = R[w + "x" + h];
-    if (r) document.documentElement.style.setProperty("--dev-r", r + "px");
+    if (r) { devR = r; document.documentElement.style.setProperty("--dev-r", r + "px"); }
   })();
+
+  // iPhone-Ecken sind keine Kreisbögen, sondern "kontinuierliche" Kurven (Squircle).
+  // Damit der Abstand zum Displayrand überall gleich ist, bekommen die Pop-ups dieselbe Kurvenform.
+  function squirclePath(w, h, r) {
+    r = Math.min(r, Math.min(w, h) / 2 / 1.52866);
+    const a = 1.52866 * r, b = 1.08849 * r, c = 0.86840 * r, d = 0.63149 * r, e = 0.07491 * r,
+          f = 0.37282 * r, g = 0.16906 * r, n = (v) => Math.round(v * 100) / 100;
+    const p = [];
+    p.push("M", n(a), 0, "L", n(w - a), 0);
+    p.push("C", n(w - b), 0, n(w - c), 0, n(w - d), n(e));
+    p.push("C", n(w - f), n(g), n(w - g), n(f), n(w - e), n(d));
+    p.push("C", w, n(c), w, n(b), w, n(a));
+    p.push("L", w, n(h - a));
+    p.push("C", w, n(h - b), w, n(h - c), n(w - e), n(h - d));
+    p.push("C", n(w - g), n(h - f), n(w - f), n(h - g), n(w - d), n(h - e));
+    p.push("C", n(w - c), h, n(w - b), h, n(w - a), h);
+    p.push("L", n(a), h);
+    p.push("C", n(b), h, n(c), h, n(d), n(h - e));
+    p.push("C", n(f), n(h - g), n(g), n(h - f), n(e), n(h - d));
+    p.push("C", 0, n(h - c), 0, n(h - b), 0, n(h - a));
+    p.push("L", 0, n(a));
+    p.push("C", 0, n(b), 0, n(c), n(e), n(d));
+    p.push("C", n(g), n(f), n(f), n(g), n(d), n(e));
+    p.push("C", n(c), 0, n(b), 0, n(a), 0, "Z");
+    return "path('" + p.join(" ") + "')";
+  }
+  function shapeGroup(el) {
+    const w = el.offsetWidth, h = el.offsetHeight;
+    if (!w || !h) return;
+    const gap = 8;
+    el.style.clipPath = squirclePath(w, h, devR - gap);
+    el.style.webkitClipPath = el.style.clipPath;
+  }
+  const groups = document.querySelectorAll(".sheet .group");
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(es => es.forEach(en => shapeGroup(en.target)));
+    groups.forEach(g => ro.observe(g));
+  } else groups.forEach(shapeGroup);
 
   // Wischen: nur die Strich-Tabelle scrollt hoch/runter, die Tab-Leiste nur seitwärts.
   // Alles andere bleibt stehen, damit die ganze Seite nicht mitwandert.
