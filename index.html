@@ -737,7 +737,7 @@
     let avail = ih;
     const sh = (window.screen && screen.height) || 0;
     const portrait = !window.matchMedia || window.matchMedia("(orientation: portrait)").matches;
-    if (!STANDALONE && sh > 0 && portrait) avail = Math.min(ih, sh - 120);
+    const vv = window.visualViewport ? window.visualViewport.height : ih; avail = Math.min(ih, vv || ih); if (sh > 0 && portrait) avail = Math.min(avail, !STANDALONE ? sh - 120 : (navigator.standalone ? sh : sh - 140));
     avail = Math.max(420, Math.round(avail));
     const r = document.documentElement.style;
     r.setProperty("--app-h", avail + "px");
