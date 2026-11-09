@@ -111,7 +111,7 @@
   .section-label { font-size: 13px; color: var(--label2); text-transform: uppercase; letter-spacing: .3px; margin: 2px 6px 8px; }
   .row .check { margin-left: auto; width: 20px; height: 20px; color: var(--blue); visibility: hidden; }
   .row.sel .check { visibility: visible; }
-  .more svg { width: 22px; height: 22px; }
+  .more svg { width: 24px; height: 24px; }
 
   /* Tabs */
   .tabs {
@@ -328,7 +328,7 @@
     display: grid; place-items: center; transition: transform .3s var(--bounce);
   }
   .form-head .icon-btn:active { transform: scale(.86); transition-duration: .07s; }
-  .form-head .icon-btn svg { width: 22px; height: 22px; }
+  .form-head .icon-btn svg { width: 24px; height: 24px; }
   .form-head .icon-btn.x { background: var(--fill); color: var(--label); }
   .form-head .icon-btn.ok { background: var(--blue); color: #fff; }
   .input {
@@ -351,7 +351,7 @@
     <div class="hbtns">
       <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button class="more" id="addBtn" aria-label="Tab hinzufügen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>
       </button>
     </div>
   </header>
@@ -396,7 +396,7 @@
 <div class="sheet" id="actionSheet">
   <div class="group panel">
     <div class="form-head">
-      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
       <h2 id="actionTitle"></h2>
       <span class="spacer"></span>
     </div>
@@ -418,7 +418,7 @@
 <div class="sheet" id="settingsSheet">
   <div class="group panel">
     <div class="form-head">
-      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
       <h2>Einstellungen</h2>
       <span class="spacer"></span>
     </div>
@@ -446,7 +446,7 @@
   <div class="group">
     <div class="form">
       <div class="form-head">
-        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
         <h2 id="dataTitle">Exportieren</h2>
         <button type="button" class="done" id="dataBtn">Kopieren</button>
       </div>
@@ -461,9 +461,9 @@
   <div class="group">
     <form class="form" id="valueForm" autocomplete="off">
       <div class="form-head">
-        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
         <h2>Wert pro Strich</h2>
-        <button type="submit" class="icon-btn ok" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+        <button type="submit" class="icon-btn ok" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 12.8l5.6 5.6L20.4 6"/></svg></button>
       </div>
       <div class="picker">
         <div class="picker-band"></div>
@@ -480,9 +480,9 @@
   <div class="group">
     <form class="form" id="nameForm" autocomplete="off">
       <div class="form-head">
-        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
         <h2 id="nameTitle">Neuer Tab</h2>
-        <button type="submit" class="icon-btn ok" id="nameDone" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+        <button type="submit" class="icon-btn ok" id="nameDone" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 12.8l5.6 5.6L20.4 6"/></svg></button>
       </div>
       <input class="input" id="nameInput" maxlength="40" placeholder="Name" enterkeyhint="done">
       <div class="colors" id="colors"></div>
