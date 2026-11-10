@@ -790,7 +790,7 @@
     <div class="side-sec">Daten</div>
       <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
       <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 10.11. #100</p>
+    <p class="side-foot">Version 10.11. #101</p>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -951,7 +951,7 @@
         <h2 id="nameTitle">Neuer Tab</h2>
         <button type="submit" class="icon-btn ok" id="nameDone" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 12.8l5.6 5.6L20.4 6"/></svg></button>
       </div>
-      <input class="input" id="nameInput" name="tally-tab-title" maxlength="40" placeholder="Name" enterkeyhint="done" autocomplete="off" autocorrect="off" data-1p-ignore data-lpignore="true">
+      <input class="input" id="tabTitle" name="search-tab-title" maxlength="40" placeholder="Titel" enterkeyhint="done" autocomplete="off" autocorrect="off" data-enter="blur" data-1p-ignore data-lpignore="true">
       <div class="colors" id="colors"></div>
     </form>
   </div>
@@ -1165,7 +1165,12 @@
   function bindSubmit(form) {
     const fire = () => form.dispatchEvent(new Event("submit", { cancelable: true }));
     form.querySelectorAll('button[type="submit"]').forEach(b => { b.type = "button"; b.addEventListener("click", fire); });
-    form.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches("input")) { e.preventDefault(); fire(); } });
+    form.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || !e.target.matches("input")) return;
+      e.preventDefault();
+      if (e.target.dataset.enter === "blur" && isHomeApp()) { e.target.blur(); return; }
+      fire();
+    });
   }
   // „Heute“, „Gestern“, „Mo., 3. Nov.“ – ältere Striche ohne Datum: „Früher“
   function dayLabel(k) {
@@ -1674,15 +1679,16 @@
     }
     renderColors();
     $("nameTitle").textContent = mode === "new" ? "Neuer Tab" : "Bearbeiten";
-    $("nameInput").value = mode === "new" ? "" : active().name;
-    $("nameInput").placeholder = mode === "new" ? "Tab " + (state.tabs.length + 1) : "Name";
+    $("tabTitle").value = mode === "new" ? "" : active().name;
+    $("tabTitle").placeholder = mode === "new" ? "Tab " + (state.tabs.length + 1) : "Titel";
     $("nameDone").setAttribute("aria-label", mode === "new" ? "Hinzufügen" : "Fertig");
     show($("nameSheet"));
-    setTimeout(() => { const i = $("nameInput"); i.focus(); i.select(); }, 60);
+    // Home-App: Pop-up bleibt erst unten; Tastatur erst, wenn man ins Feld tippt (dann gleitet es mit hoch)
+    if (!isHomeApp()) setTimeout(() => { const i = $("tabTitle"); i.focus(); i.select(); }, 60);
   }
   $("nameForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    let name = $("nameInput").value.trim();
+    let name = $("tabTitle").value.trim();
     if (nameMode === "new") {
       if (!name) name = "Tab " + (state.tabs.length + 1);
       const t = { id: uid(), name, count: 0, color: pickedColor, hist: [[Date.now(), 0]] };
@@ -2823,7 +2829,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#100";
+  const APP_VERSION = "#101";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
