@@ -790,7 +790,7 @@
     <div class="side-sec">Daten</div>
       <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
       <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 10.11. #101</p>
+    <p class="side-foot">Version 10.11. #102</p>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -2658,8 +2658,12 @@
   // Sichtbare Höhe bestimmen. In der Claude-App auf dem iPhone ist das Fenster
   // der App höher als der sichtbare Bereich (die Leiste oben schiebt es nach unten).
   // Deshalb nie höher als Bildschirmhöhe minus Statusleiste und Claude-Leiste.
+  let baseIH = window.innerHeight; // Fensterhöhe ohne Tastatur
+  const typingNow = () => { const a = document.activeElement; return !!(a && a.matches && a.matches("input:not(.hap), textarea")); };
   function fitApp() {
+    if (typingNow() && window.innerHeight < baseIH - 80) return; // Tastatur offen: App nicht zusammenquetschen
     const ih = window.innerHeight;
+    if (!typingNow()) baseIH = ih;
     let avail = ih;
     const sh = (window.screen && screen.height) || 0;
     const portrait = !window.matchMedia || window.matchMedia("(orientation: portrait)").matches;
@@ -2683,43 +2687,50 @@
     let v = 0;
     try { v = Number(localStorage.getItem("tally.kb")) || 0; } catch (e) {}
     const est = Math.round(((window.screen && screen.height) || 800) * 0.44);
-    return v > 150 && v < 700 ? Math.max(v, est) : est;
+    return v > 150 && v < 700 ? v : est;
   }
   const isHomeApp = () => navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
   function onKeyboard() {
     const vv = window.visualViewport;
     if (!vv) return;
-    const raw = Math.round(window.innerHeight - vv.height);
-    const kb = Math.max(0, Math.round(raw - vv.offsetTop));
-    const a = document.activeElement;
-    const typing = a && a.matches && a.matches("input, textarea");
-    if (raw > 80 && typing) {
-      kbExpect = 0;
-      try { localStorage.setItem("tally.kb", String(raw)); } catch (e) {}
+    const ih = window.innerHeight, a = document.activeElement;
+    const typing = a && a.matches && a.matches("input:not(.hap), textarea");
+    // Tastatur erkennbar, egal wie iOS sie meldet: sichtbarer Bereich kleiner, nach oben verschoben
+    // oder das ganze Fenster kleiner geworden (iOS 26 Home-App)
+    const seen = (ih - vv.height > 80) || vv.offsetTop > 40 || ih < baseIH - 80;
+    if (typing && seen) {
+      kbExpect = 0; kbSeen = true;
+      const kb = Math.max(0, Math.round(ih - vv.offsetTop - vv.height)); // Abstand Fensterunterkante → Tastaturoberkante
+      const total = Math.round(baseIH - vv.height);
+      if (total > 150 && total < 700) try { localStorage.setItem("tally.kb", String(total)); } catch (e) {}
       document.documentElement.style.setProperty("--kb", kb + "px");
       return;
     }
-    if (typing && (Date.now() < kbExpect || (isHomeApp() && a.closest && a.closest(".sheet")))) return; // Schätzung behalten, bis das Feld verlassen wird
+    if (typing && (Date.now() < kbExpect || (isHomeApp() && a.closest && a.closest(".sheet")))) return; // warten bzw. Stand behalten bis das Feld verlassen wird
     document.documentElement.style.setProperty("--kb", "0px");
     window.scrollTo(0, 0);
   }
+  let kbSeen = false, kbLoop = 0;
   if (window.visualViewport) {
     visualViewport.addEventListener("resize", onKeyboard);
     visualViewport.addEventListener("scroll", onKeyboard);
   }
+  window.addEventListener("resize", onKeyboard);
   document.addEventListener("focusin", (e) => {
     const el = e.target;
     if (!el || !el.matches || !el.matches(".sheet input:not(.hap), .sheet textarea")) return; // jedes Feld in einem Pop-up
-    const vv = window.visualViewport;
-    if (vv && window.innerHeight - vv.height > 80) return; // Tastatur ist schon offen
-    // Nur als App vom Home-Bildschirm: Dort kann die App die Tastatur messen.
-    // In Claude (eingebettet) sieht die Seite die Tastatur nicht – dann nicht vorab anheben,
-    // sonst springt das Pop-up kurz hoch und wieder runter.
-    if (!isHomeApp()) return;
-    kbExpect = Date.now() + 1200;
-    document.documentElement.style.setProperty("--kb", kbGuess() + "px");
-    void document.body.offsetHeight;
-    setTimeout(onKeyboard, 1300);
+    if (!isHomeApp()) return; // in Claude/Safari regelt iOS das selbst
+    // Erst schauen, was iOS meldet (Pop-up geht mit der Tastatur hoch). Nur wenn iOS gar nichts meldet,
+    // nach kurzer Zeit auf die geschätzte Tastaturhöhe anheben.
+    kbSeen = false; kbExpect = Date.now() + 900;
+    const t0 = performance.now();
+    cancelAnimationFrame(kbLoop);
+    const loop = () => { onKeyboard(); if (performance.now() - t0 < 1200) kbLoop = requestAnimationFrame(loop); };
+    kbLoop = requestAnimationFrame(loop);
+    setTimeout(() => {
+      if (kbSeen || !typingNow()) return;
+      document.documentElement.style.setProperty("--kb", kbGuess() + "px");
+    }, 650);
   });
   document.addEventListener("focusout", () => {
     setTimeout(() => {
@@ -2829,7 +2840,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#101";
+  const APP_VERSION = "#102";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
