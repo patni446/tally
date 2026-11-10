@@ -700,6 +700,65 @@
   .st-list .v { flex: none; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .st-open { display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; margin: 0; border-radius: 24px;
     background: var(--st-c, var(--blue)); color: var(--st-on, #fff); font-size: 17px; font-weight: 600; box-shadow: var(--rim-color); }
+
+  /* ---------- Glas-Morph (#95): Knopf verwandelt sich wie in iOS 26 in ein Glas-Menü ---------- */
+   /* Rand: echte Ebenen mit --rim-gray (genau wie alle anderen Glas-Knöpfe), folgen der Form */
+  :root { --mg-btn: rgba(255,255,255,.18); --mg-menu: rgba(255,255,255,.74); --mg-press: rgba(255,255,255,.95); }
+  :root[data-theme="dark"] { --mg-btn: rgba(118,118,128,.24); --mg-menu: rgba(128,128,136,.30); --mg-press: rgba(170,170,180,.50); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --mg-btn: rgba(118,118,128,.24); --mg-menu: rgba(128,128,136,.30); --mg-press: rgba(170,170,180,.50); } }
+  .mg-rimbox { position: absolute; left: 0; top: 0; box-shadow: var(--rim-gray); pointer-events: none; will-change: transform; }
+  .mg { position: fixed; left: 0; top: 0; z-index: 41; pointer-events: none; display: none; }
+  .mg.on { display: block; }
+  .mg-glass, .mg-clip { position: absolute; left: 0; top: 0; width: 1px; height: 1px; clip-path: path("M0 0Z"); -webkit-clip-path: path("M0 0Z"); }
+  .mg-glass { -webkit-backdrop-filter: blur(11px) saturate(1.6); backdrop-filter: blur(11px) saturate(1.6); }
+  .mg-rim { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; }
+  .mg-content { position: absolute; left: 0; top: 0; transform-origin: 50% 50%; opacity: 0; will-change: transform, opacity; }
+  .mg-icon { position: absolute; left: 0; top: 0; display: grid; place-items: center; transform-origin: 50% 50%; will-change: transform, opacity; color: var(--label); }
+  .mg.open .mg-clip, .mg.open .mg-content { pointer-events: auto; }
+  .mg-shield { position: fixed; inset: 0; z-index: 40; display: none; }
+  .mg-shield.on { display: block; }
+  .mg-row { position: absolute; inset: 0; display: block; width: 100%; border-radius: 30px; color: var(--label); text-align: left; transition: background-color .2s ease; }
+  .mg-row svg { position: absolute; left: 39px; top: 50%; transform: translate(-50%, -50%); width: 21px; height: 21px; }
+  .mg-row span { position: absolute; left: 64px; top: 50%; transform: translateY(-50%); font-size: 17px; letter-spacing: -.4px; white-space: nowrap; }
+  .mg-row.red { color: var(--red); }
+  .mg-row.on { background: var(--fill-press); transition-duration: 0s; }
+  .mg-hide { opacity: 0 !important; transition: none !important; }
+  .mg-dots { display: flex; gap: 2.9px; } .mg-dots i { width: 5.3px; height: 5.3px; border-radius: 50%; background: currentColor; }
+  /* „…“ oben rechts in der Seitenleiste; im Auswählen-Modus wird daraus ein X */
+  .side-more { position: relative; margin-left: auto; margin-right: -8px; width: 44px; height: 44px; flex: none; border-radius: 50%; display: grid; place-items: center;
+    color: var(--label); background: var(--btn-glass); box-shadow: var(--refl, 0 0 #0000), var(--rim-gray); touch-action: manipulation; }
+  .side-more > * { grid-area: 1 / 1; transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .25s ease; }
+  .side-more svg { width: 24px; height: 24px; opacity: 0; transform: rotate(-90deg) scale(.4); }
+  .side.selecting .side-more .mg-dots { opacity: 0; transform: rotate(90deg) scale(.4); }
+  .side.selecting .side-more svg { opacity: 1; transform: none; }
+  /* Auswählen-Modus: Kreise vor den Tabs */
+  .side-row .selc { width: 0; height: 22px; margin-right: -12px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff;
+    box-shadow: inset 0 0 0 1.6px var(--label3); opacity: 0; scale: .4;
+    transition: width .42s var(--spring), margin .42s var(--spring), opacity .25s ease, scale .42s var(--spring), background-color .2s ease, box-shadow .2s ease; }
+  .side-row .selc svg { width: 13px; height: 13px; opacity: 0; scale: .4; transition: opacity .18s ease, scale .3s cubic-bezier(.34,1.56,.64,1); }
+  .side.selecting .side-row .selc { width: 22px; margin-right: 0; opacity: 1; scale: 1; }
+  .side-row.picked .selc { background: var(--blue); box-shadow: none; }
+  .side-row.picked .selc svg { opacity: 1; scale: 1; }
+  .side-row .chev2 { transition: opacity .25s ease; }
+  .side.selecting .side-row .chev2 { opacity: 0; }
+  .side.selecting #sideTabs .side-row.on { background: transparent; }
+  .side.selecting #sideTabs .side-row.picked { background: var(--side-sel); }
+  /* Zahnrad → Mülleimer */
+  .side-gear { position: relative; transition: background-color .35s ease, color .35s ease, box-shadow .35s ease; }
+  .side-gear svg { grid-area: 1 / 1; transition: transform .55s cubic-bezier(.34,1.56,.64,1), opacity .25s ease, filter .3s ease; }
+  .side-gear .g-trash { opacity: 0; transform: rotate(40deg) scale(.3); filter: blur(3px); }
+  .side.selecting .side-gear .g-gear { opacity: 0; transform: rotate(-120deg) scale(.3); filter: blur(3px);
+    transition: transform .36s cubic-bezier(.5,0,.75,0), opacity .2s ease .08s, filter .25s ease; }
+  .side.selecting .side-gear .g-trash { opacity: 1; transform: none; filter: none; transition-delay: .1s; }
+  .side.selecting .side-gear { color: var(--label3); }
+  .side.selecting.has-sel .side-gear { background: var(--red); color: #fff; box-shadow: var(--refl, 0 0 #0000), var(--rim-color); }
+  .side-gear.pop { animation: gearPop .6s cubic-bezier(.3,.7,.4,1); }
+  @keyframes gearPop { 0% { scale: 1; } 30% { scale: .82; } 64% { scale: 1.08; } 100% { scale: 1; } }
+  .side-gear .lid { transform-box: fill-box; transform-origin: 85% 100%; }
+  .side-gear.lid-pop .lid { animation: lidPop .55s ease; }
+  @keyframes lidPop { 0% { rotate: 0deg; } 35% { rotate: -24deg; } 70% { rotate: 6deg; } 100% { rotate: 0deg; } }
+  .side-new { transition: opacity .3s ease, scale .45s var(--spring), filter .3s ease; }
+  .side.selecting .side-new { opacity: 0; scale: .8; filter: blur(4px); pointer-events: none; }
 </style>
 </head>
 <body>
@@ -707,7 +766,7 @@
 <div class="side-scrim" id="sideScrim"></div>
 <aside class="side" id="side" aria-label="Menü">
   <div class="side-scroll">
-    <div class="side-title"><svg class="logo" viewBox="0 0 38 34" aria-hidden="true"><line x1="6" y1="5" x2="6" y2="29"/><line x1="14" y1="5" x2="14" y2="29"/><line x1="22" y1="5" x2="22" y2="29"/><line x1="30" y1="5" x2="30" y2="29"/><line class="d" x1="2" y1="24" x2="35" y2="9"/></svg><span class="word">Tally</span></div>
+    <div class="side-title"><svg class="logo" viewBox="0 0 38 34" aria-hidden="true"><line x1="6" y1="5" x2="6" y2="29"/><line x1="14" y1="5" x2="14" y2="29"/><line x1="22" y1="5" x2="22" y2="29"/><line x1="30" y1="5" x2="30" y2="29"/><line class="d" x1="2" y1="24" x2="35" y2="9"/></svg><span class="word">Tally</span><button class="side-more" id="sideMore" aria-label="Mehr"><span class="mg-dots"><i></i><i></i><i></i></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
     <div class="side-sec">Tabs</div>
     <div id="sideTabs"></div>
   </div>
@@ -725,7 +784,7 @@
     <div class="side-sec">Daten</div>
       <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
       <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 9.11. #94<br><span id="diag2"></span></p>
+    <p class="side-foot">Version 10.11. #96<br><span id="diag2"></span></p>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -744,7 +803,7 @@
     <div class="st-foot"><button class="st-open" id="statOpen">Tab öffnen</button></div>
   </div>
   <div class="side-bottom">
-    <button class="side-gear" id="sideGear" aria-label="Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill-rule="evenodd" d="M9.84 4.19 L10.18 2.17 L13.82 2.17 L14.16 4.19 L15.99 4.95 L17.66 3.76 L20.24 6.34 L19.05 8.01 L19.81 9.84 L21.83 10.18 L21.83 13.82 L19.81 14.16 L19.05 15.99 L20.24 17.66 L17.66 20.24 L15.99 19.05 L14.16 19.81 L13.82 21.83 L10.18 21.83 L9.84 19.81 L8.01 19.05 L6.34 20.24 L3.76 17.66 L4.95 15.99 L4.19 14.16 L2.17 13.82 L2.17 10.18 L4.19 9.84 L4.95 8.01 L3.76 6.34 L6.34 3.76 L8.01 4.95Z M16.10 12 A4.1 4.1 0 1 0 7.90 12 A4.1 4.1 0 1 0 16.10 12Z"/></svg></button>
+    <button class="side-gear" id="sideGear" aria-label="Einstellungen"><svg class="g-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="lid"><path d="M3.8 6.6h16.4"/><path d="M9.2 6.4V5a1.6 1.6 0 0 1 1.6-1.6h2.4A1.6 1.6 0 0 1 14.8 5v1.4"/></g><path d="M5.9 6.8l.9 12.1a2 2 0 0 0 2 1.9h6.4a2 2 0 0 0 2-1.9l.9-12.1"/><path d="M10 10.8v6M14 10.8v6"/></svg><svg class="g-gear" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill-rule="evenodd" d="M9.84 4.19 L10.18 2.17 L13.82 2.17 L14.16 4.19 L15.99 4.95 L17.66 3.76 L20.24 6.34 L19.05 8.01 L19.81 9.84 L21.83 10.18 L21.83 13.82 L19.81 14.16 L19.05 15.99 L20.24 17.66 L17.66 20.24 L15.99 19.05 L14.16 19.81 L13.82 21.83 L10.18 21.83 L9.84 19.81 L8.01 19.05 L6.34 20.24 L3.76 17.66 L4.95 15.99 L4.19 14.16 L2.17 13.82 L2.17 10.18 L4.19 9.84 L4.95 8.01 L3.76 6.34 L6.34 3.76 L8.01 4.95Z M16.10 12 A4.1 4.1 0 1 0 7.90 12 A4.1 4.1 0 1 0 16.10 12Z"/></svg></button>
     <button class="side-new" id="sideNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Neuer Tab</button>
   </div>
 </aside>
@@ -851,7 +910,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #94<br><span id="diag"></span></p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 10.11. #96<br><span id="diag"></span></p>
   </div>
 </div>
 
@@ -1963,12 +2022,20 @@
     const box = $("sideTabs"); box.textContent = "";
     state.tabs.forEach(t => {
       const b = document.createElement("button");
-      b.className = "side-row" + (t.id === state.activeId ? " on" : "");
-      b.innerHTML = '<span class="sdot"></span><span></span><span class="sval"></span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+      b.className = "side-row" + (t.id === state.activeId ? " on" : "") + (picked && picked.has(t.id) ? " picked" : "");
+      b.dataset.id = t.id;
+      b.innerHTML = '<i class="selc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span class="sdot"></span><span></span><span class="sval"></span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
       b.querySelector(".sdot").style.background = hexOf(t.color);
-      b.children[1].textContent = t.name;
+      b.children[2].textContent = t.name;
       b.querySelector(".sval").textContent = euro(moneyOf(t));
-      b.onclick = () => { if (!b._noClick) openStats(t.id); };
+      b.onclick = () => {
+        if (b._noClick) return;
+        if (selecting) { // Auswählen-Modus: antippen wählt aus / ab
+          picked.has(t.id) ? picked.delete(t.id) : picked.add(t.id);
+          b.classList.toggle("picked", picked.has(t.id)); updateTrash(); return;
+        }
+        openStats(t.id);
+      };
       box.appendChild(b);
     });
   }
@@ -1980,10 +2047,11 @@
     document.body.classList.add("side-open");
   }
   function closeSide() {
+    if (window.__mgAbort) window.__mgAbort();
     const sd = $("side"); sd.classList.remove("dragging"); sd.style.transform = "";
     document.querySelector(".app").style.transform = "";
     document.body.classList.remove("side-open");
-    setTimeout(() => { if (!document.body.classList.contains("side-open")) { sd.classList.remove("settings"); sd.classList.remove("stats"); statId = null; } }, 560);
+    setTimeout(() => { if (!document.body.classList.contains("side-open")) { sd.classList.remove("settings"); sd.classList.remove("stats"); statId = null; if (selecting) setSelecting(false); } }, 560);
   }
   // ---------- Statistik ----------
   var statId = null, statRange = 0, statT = null;
@@ -2160,11 +2228,380 @@
     box.onpointerup = box.onpointercancel = () => box.classList.remove("scrubbing");
   }
   $("sideScrim").onclick = closeSide;
-  $("sideGear").onclick = () => { renderThemeList(); $("side").classList.remove("stats"); $("side").classList.toggle("settings"); };
+  $("sideGear").onclick = () => { if (selecting) return; renderThemeList(); $("side").classList.remove("stats"); $("side").classList.toggle("settings"); };
   $("sideBack").onclick = () => $("side").classList.remove("settings");
   $("sideExport").onclick = () => { closeSide(); setTimeout(() => openData("export"), 250); };
   $("sideImport").onclick = () => { closeSide(); setTimeout(() => openData("import"), 250); };
   $("sideNew").onclick = () => { closeSide(); setTimeout(() => $("addBtn").click(), 250); };
+  // ---------- Glas-Morph (#95) ----------
+  // Ein Knopf verwandelt sich wie im iOS-26-Video in ein Glas-Menü und zurück.
+  // Bewegung aus Patricks Bildschirmaufnahme gemessen (Knopf 44 pt, Menü 249 × 347) und auf die
+  // jeweilige Menügröße umgerechnet. Alle Bilder werden vorab berechnet (240 pro Sekunde) –
+  // pro Bildschirm-Frame wird nur ein fertiger Pfad gesetzt.
+  const Morph = (() => {
+    const RATE = 240, VBX = 364, VBY = 84, VB = { L: 342, T: 62, R: 386, B: 106 };
+    // Glas-Tönung als Stufe: 0 = Knopf, 1 = Menü, 2 = gedrückt
+    const OPEN = {
+      L: [[0,337],[.017,337],[.033,315],[.05,293],[.067,261],[.083,234],[.1,209],[.117,189],[.133,173],[.15,159],[.167,149],[.183,142],[.2,137],[.25,132],[.3,133],[.35,135],[.4,137],[.45,138]],
+      T: [[0,61],[.017,75],[.033,86],[.05,97],[.067,110],[.083,118],[.1,120],[.117,117],[.133,110],[.15,100],[.167,92],[.183,78],[.2,64],[.25,60.5],[.3,60],[.35,60.5],[.4,61.5],[.45,62]],
+      R: [[0,391],[.017,377],[.033,375],[.05,373],[.067,375],[.083,378],[.1,380],[.117,382],[.133,383],[.15,385],[.167,386],[.2,387],[.25,388],[.3,387.5],[.45,387]],
+      B: [[0,107],[.017,123],[.033,152],[.05,180],[.067,250],[.083,297],[.1,337],[.117,368],[.133,392],[.15,408],[.167,416],[.2,417],[.25,417],[.3,416],[.35,412],[.4,410],[.45,409]],
+      r: [[0,23],[.017,20],[.033,28],[.05,40],[.067,57],[.083,66],[.1,70],[.117,68],[.133,63],[.167,54],[.2,45],[.25,38],[.3,35],[.45,34]],
+      p: [[0,23],[.017,20],[.033,14],[.05,11],[.067,15],[.083,25],[.1,40],[.117,55],[.133,62],[.167,54],[.2,45],[.25,38],[.3,35],[.45,34]],
+      tint: [[0,2],[.017,1.73],[.033,1.46],[.05,1.28],[.1,1.15],[.15,1]],
+      icon: [[0,1],[.012,.3],[.017,0]],
+      cOp: [[0,0],[.033,0],[.067,.75],[.1,.95],[.12,1]],
+      spec: [[0,.6],[.033,1],[.067,.5],[.12,.15],[.2,0]],
+      end: .48
+    };
+    const CLOSE = {
+      L: [[0,138],[.017,141],[.033,152],[.05,166],[.067,181],[.083,200],[.1,220],[.117,240],[.133,259],[.15,276],[.167,291],[.183,305],[.2,317],[.217,326],[.233,335],[.25,338],[.267,340],[.3,342],[.35,342]],
+      T: [[0,62],[.017,62],[.033,64],[.05,90],[.067,118],[.083,121],[.1,120],[.117,116],[.133,109],[.15,102],[.167,100],[.183,96],[.2,90],[.217,82],[.233,74],[.25,70],[.267,68],[.3,64],[.35,62]],
+      R: [[0,387],[.017,386],[.033,385],[.05,384],[.067,383],[.083,381],[.1,380],[.117,378],[.133,377],[.15,377],[.167,378],[.183,380],[.2,382],[.217,384],[.233,385],[.267,386],[.35,386]],
+      B: [[0,409],[.017,416],[.033,415],[.05,405],[.067,389],[.083,359],[.1,325],[.117,289],[.133,256],[.15,225],[.167,197],[.183,174],[.2,154],[.217,138],[.233,125],[.25,120],[.267,116],[.3,108],[.35,106]],
+      r: [[0,34],[.017,36],[.033,40],[.05,48],[.067,58],[.083,62],[.1,62],[.117,58],[.133,52],[.15,48],[.167,42],[.183,36],[.2,31],[.217,28],[.233,25],[.267,23],[.3,22]],
+      p: [[0,34],[.017,36],[.033,40],[.05,48],[.067,58],[.083,62],[.1,50],[.117,40],[.133,25],[.15,20],[.167,18],[.183,16],[.2,16],[.217,20],[.267,23],[.3,22]],
+      bR: [[0,0],[.117,0],[.133,4],[.15,8],[.167,12],[.183,15],[.2,18],[.217,20],[.267,22],[.3,23.2],[.35,22.4],[.42,22]],
+      thread: [[0,0],[.117,0],[.133,1.6],[.15,3],[.167,4.2],[.183,5.5],[.2,6],[.27,6],[.31,0]],
+      tint: [[0,1],[.1,.9],[.2,.37],[.3,0]],
+      icon: [[0,0],[.15,0],[.2,1]],
+      cOp: [[0,1],[.067,.75],[.1,.35],[.133,0]],
+      spec: [[0,0],[.15,0],[.2,.25],[.3,0]],
+      end: .44
+    };
+    function curve(pts) { // monotone kubische Interpolation (kein künstliches Überschwingen)
+      const n = pts.length, x = pts.map(q => q[0]), y = pts.map(q => q[1]);
+      if (n === 1) return () => y[0];
+      const d = [], m = new Array(n);
+      for (let i = 0; i < n - 1; i++) d.push((y[i + 1] - y[i]) / (x[i + 1] - x[i]));
+      m[0] = d[0]; m[n - 1] = d[n - 2];
+      for (let i = 1; i < n - 1; i++) m[i] = (d[i - 1] * d[i] <= 0) ? 0 : (d[i - 1] + d[i]) / 2;
+      for (let i = 0; i < n - 1; i++) {
+        if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+        const a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+        if (s > 9) { const t = 3 / Math.sqrt(s); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+      }
+      return t => {
+        if (t <= x[0]) return y[0];
+        if (t >= x[n - 1]) return y[n - 1];
+        let i = 0; while (t > x[i + 1]) i++;
+        const h = x[i + 1] - x[i], s = (t - x[i]) / h, s2 = s * s, s3 = s2 * s;
+        return (2 * s3 - 3 * s2 + 1) * y[i] + (s3 - 2 * s2 + s) * h * m[i] + (-2 * s3 + 3 * s2) * y[i + 1] + (s3 - s2) * h * m[i + 1];
+      };
+    }
+    const compile = K => { const o = { end: K.end }; for (const k in K) if (k !== "end") o[k] = curve(K[k]); return o; };
+    const OPENc = compile(OPEN), CLOSEc = compile(CLOSE);
+    const f2 = v => Math.round(v * 100) / 100;
+    // Box mit kontinuierlichen Ecken; Radien: oben-links, oben-rechts, unten-rechts, unten-links
+    function boxPath(L, T, R, B, rTL, rTR, rBR, rBL) {
+      const half = Math.min(R - L, B - T) / 2;
+      const c = r => { const s = Math.min(1.2 * r, half), k = Math.max(0, Math.min(1, (1.2 * r - s) / (0.2 * r || 1))); return [s, s * (0.35 + 0.0977 * k)]; };
+      const [a, ca] = c(rTL), [b, cb] = c(rTR), [e, ce] = c(rBR), [f, cf] = c(rBL);
+      return `M${f2(L + a)} ${f2(T)}L${f2(R - b)} ${f2(T)}C${f2(R - cb)} ${f2(T)} ${f2(R)} ${f2(T + cb)} ${f2(R)} ${f2(T + b)}` +
+        `L${f2(R)} ${f2(B - e)}C${f2(R)} ${f2(B - ce)} ${f2(R - ce)} ${f2(B)} ${f2(R - e)} ${f2(B)}` +
+        `L${f2(L + f)} ${f2(B)}C${f2(L + cf)} ${f2(B)} ${f2(L)} ${f2(B - cf)} ${f2(L)} ${f2(B - f)}` +
+        `L${f2(L)} ${f2(T + a)}C${f2(L)} ${f2(T + ca)} ${f2(L + ca)} ${f2(T)} ${f2(L + a)} ${f2(T)}Z`;
+    }
+    function smin(a, b, k) { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k * 0.25; }
+    function fieldPath(f, w, h, step) { // Marching Squares → geglätteter, geschlossener Pfad
+      const nx = Math.ceil(w / step) + 1, ny = Math.ceil(h / step) + 1, v = new Float32Array(nx * ny);
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+        let val = f(i * step, j * step);
+        if (i === 0 || j === 0 || i === nx - 1 || j === ny - 1) val = Math.max(val, .01);
+        v[j * nx + i] = val;
+      }
+      const pt = new Map();
+      const P = id => { let q = pt.get(id); if (q) return q;
+        const base = id >> 1, i = base % nx, j = (base / nx) | 0;
+        if ((id & 1) === 0) { const a = v[j * nx + i], b = v[j * nx + i + 1]; q = [(i + a / (a - b)) * step, j * step]; }
+        else { const a = v[j * nx + i], b = v[(j + 1) * nx + i]; q = [i * step, (j + a / (a - b)) * step]; }
+        pt.set(id, q); return q; };
+      const adj = new Map(), add = (a, b) => { (adj.get(a) || adj.set(a, []).get(a)).push(b); (adj.get(b) || adj.set(b, []).get(b)).push(a); };
+      for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+        const a = v[j * nx + i], b = v[j * nx + i + 1], c = v[(j + 1) * nx + i + 1], d = v[(j + 1) * nx + i];
+        const cs = (a < 0 ? 8 : 0) | (b < 0 ? 4 : 0) | (c < 0 ? 2 : 0) | (d < 0 ? 1 : 0); if (cs === 0 || cs === 15) continue;
+        const E = [2 * (j * nx + i), 2 * (j * nx + i + 1) + 1, 2 * ((j + 1) * nx + i), 2 * (j * nx + i) + 1], ctr = (a + b + c + d) / 4 < 0;
+        switch (cs) {
+          case 1: add(E[3], E[2]); break; case 2: add(E[2], E[1]); break; case 3: add(E[3], E[1]); break;
+          case 4: add(E[0], E[1]); break; case 6: add(E[0], E[2]); break; case 7: add(E[3], E[0]); break;
+          case 8: add(E[3], E[0]); break; case 9: add(E[0], E[2]); break; case 11: add(E[0], E[1]); break;
+          case 12: add(E[3], E[1]); break; case 13: add(E[1], E[2]); break; case 14: add(E[3], E[2]); break;
+          case 5: if (ctr) { add(E[3], E[0]); add(E[1], E[2]); } else { add(E[0], E[1]); add(E[3], E[2]); } break;
+          case 10: if (ctr) { add(E[0], E[1]); add(E[3], E[2]); } else { add(E[3], E[0]); add(E[1], E[2]); } break;
+        }
+      }
+      const seen = new Set(); let d = "";
+      for (const start of adj.keys()) {
+        if (seen.has(start)) continue;
+        const loop = []; let prev = -1, cur = start;
+        while (cur !== undefined && !seen.has(cur)) { seen.add(cur); loop.push(P(cur)); const nb = adj.get(cur), nxt = nb[0] !== prev ? nb[0] : nb[1]; prev = cur; cur = nxt; }
+        if (loop.length < 3) continue;
+        const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        const s0 = mid(loop[loop.length - 1], loop[0]); d += `M${f2(s0[0])} ${f2(s0[1])}`;
+        for (let k = 0; k < loop.length; k++) { const a = loop[k], b = mid(a, loop[(k + 1) % loop.length]); d += `Q${f2(a[0])} ${f2(a[1])} ${f2(b[0])} ${f2(b[1])}`; }
+        d += "Z";
+      }
+      return d || "M0 0Z";
+    }
+    const parseCol = (str) => {
+      str = String(str || "").trim();
+      let m = str.match(/^#([0-9a-f]{3,8})$/i);
+      if (m) { let h = m[1]; if (h.length === 3) h = h.split("").map(c => c + c).join(""); const n = parseInt(h.slice(0, 6), 16);
+        return [n >> 16 & 255, n >> 8 & 255, n & 255, h.length === 8 ? parseInt(h.slice(6), 16) / 255 : 1]; }
+      m = str.match(/[\d.]+/g) || [0, 0, 0, 1];
+      return [+m[0], +m[1], +m[2], m[3] === undefined ? 1 : +m[3]];
+    };
+    const mix = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
+    const all = [];
+
+    // cfg: btn, S (Knopfgröße), corner ("tr": Menü wächst nach links unten, "bl": nach rechts oben), W, H, R,
+    //      html (Menü-Inhalt), icon (Symbol im Knopf), iconColor, colors() → {btn, press, menu}, enabled(), onPick(el), onClosed()
+    function create(cfg) {
+      const S = cfg.S, k44 = S / 44, flip = cfg.corner === "bl";
+      const MB = flip ? { L: -S / 2 - 1, R: -S / 2 - 1 + cfg.W, T: S / 2 - cfg.H, B: S / 2 } : { L: S / 2 + 1 - cfg.W, R: S / 2 + 1, T: -S / 2, B: -S / 2 + cfg.H };
+      const VM = flip ? { L: 2 * VBX - 387, R: 2 * VBX - 138, T: 2 * VBY - 409, B: 2 * VBY - 62 } : { L: 138, R: 387, T: 62, B: 409 };
+      const NB = { L: -S / 2, T: -S / 2, R: S / 2, B: S / 2 };
+      const ax = (v0, v1, n0, n1, v) => n0 + (v - v0) * (n1 - n0) / (v1 - v0);
+      const remap = (L, T, R, B) => {
+        if (flip) { const l = 2 * VBX - R, r = 2 * VBX - L, t = 2 * VBY - B, b = 2 * VBY - T; L = l; R = r; T = t; B = b; }
+        const cx = ax((VB.L + VB.R) / 2, (VM.L + VM.R) / 2, 0, (MB.L + MB.R) / 2, (L + R) / 2);
+        const cy = ax((VB.T + VB.B) / 2, (VM.T + VM.B) / 2, 0, (MB.T + MB.B) / 2, (T + B) / 2);
+        const w = ax(VB.R - VB.L, VM.R - VM.L, S, MB.R - MB.L, R - L), h = ax(VB.B - VB.T, VM.B - VM.T, S, MB.B - MB.T, B - T);
+        return { L: cx - w / 2, T: cy - h / 2, R: cx + w / 2, B: cy + h / 2 };
+      };
+      // ein Frame (Koordinaten relativ zur Knopfmitte)
+      function frame(s) {
+        const { L, T, R, B } = s, field = s.bR > .01 || s.thread > .01, pad = field ? 8 : 2;
+        const eL = Math.min(L, -s.bR), eT = Math.min(T, -s.bR), eR = Math.max(R, s.bR), eB = Math.max(B, s.bR);
+        const gx = Math.floor(eL) - pad, gy = Math.floor(eT) - pad, gw = Math.ceil(eR) + pad - gx, gh = Math.ceil(eB) + pad - gy;
+        const r = Math.min(s.r, (R - L) / 2, (B - T) / 2), p = Math.min(s.p, (R - L) / 2, (B - T) / 2);
+        let d;
+        if (field) {
+          const l = L - gx, t = T - gy, rr = R - gx, b = B - gy, cx = -gx, cy = -gy, mx = (l + rr) / 2, my = (t + b) / 2, hw = (rr - l) / 2, hh = (b - t) / 2;
+          const tx = flip ? l + p * .45 : rr - p * .45, ty = flip ? b - p * .45 : t + p * .45;
+          const fn = (x, y) => {
+            const pointy = flip ? (x < mx && y > my) : (x > mx && y < my), rad = pointy ? p : r;
+            const qx = Math.abs(x - mx) - hw + rad, qy = Math.abs(y - my) - hh + rad;
+            let v = Math.min(Math.max(qx, qy), 0) + Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) - rad;
+            if (s.bR > .01) v = smin(v, Math.hypot(x - cx, y - cy) - s.bR, s.k || 12);
+            if (s.thread > .01) {
+              const pax = x - cx, pay = y - cy, bax = tx - cx, bay = ty - cy, hh2 = Math.max(0, Math.min(1, (pax * bax + pay * bay) / (bax * bax + bay * bay || 1)));
+              v = smin(v, Math.hypot(pax - bax * hh2, pay - bay * hh2) - s.thread, 9.6);
+            }
+            return v;
+          };
+          d = fieldPath(fn, gw, gh, 1.2);
+        } else {
+          d = flip ? boxPath(L - gx, T - gy, R - gx, B - gy, r, r, r, p) : boxPath(L - gx, T - gy, R - gx, B - gy, r, p, r, r);
+        }
+        const bw = R - L, bh = B - T, ratio = Math.min(1.05, Math.sqrt((bw / cfg.W) * (bh / cfg.H))), sc = .78 + .22 * ratio;
+        const dx = (L + R) / 2 - (MB.L + MB.R) / 2, dy = (T + B) / 2 - (MB.T + MB.B) / 2;
+        let icx, icy, isx, isy;
+        if (s.open) { icx = (L + R) / 2; icy = (T + B) / 2; isx = bw / S; isy = bh / S; } else { icx = 0; icy = 0; isx = isy = Math.max(s.iconR || s.bR, .001) / (S / 2); }
+        const rad = flip ? `${f2(r)}px ${f2(r)}px ${f2(r)}px ${f2(p)}px` : `${f2(r)}px ${f2(p)}px ${f2(r)}px ${f2(r)}px`;
+        return { d, clip: `path("${d}")`, gx, gy, gw, gh,
+          rT: `translate3d(${f2(L)}px,${f2(T)}px,0)`, rW: f2(R - L) + "px", rH: f2(B - T) + "px", rR: rad,
+          bT: `translate3d(${f2(-s.bR)}px,${f2(-s.bR)}px,0)`, bD: f2(2 * s.bR) + "px", bOn: "none" /* nur ein Rand (Körper) – ein zweiter Ring im Knopf sah wie eine Naht aus */, tv: Math.round(s.tint * 100) / 100, spec: Math.max(0, s.spec).toFixed(3),
+          cT: `translate3d(${f2(MB.L - gx + dx)}px,${f2(MB.T - gy + dy)}px,0) scale(${sc.toFixed(4)})`, cOp: Math.max(0, Math.min(1, s.cOp)).toFixed(3),
+          iT: `translate3d(${f2(icx - S / 2)}px,${f2(icy - S / 2)}px,0) scale(${isx.toFixed(3)},${isy.toFixed(3)})`, iOp: Math.max(0, Math.min(1, s.icon)).toFixed(3) };
+      }
+      let OPENF = null, CLOSEF = null, PRESS = null, MENUF = null;
+      function bake() {
+        if (OPENF) return;
+        const run = (C, isOpen) => {
+          const n = Math.ceil(C.end * RATE) + 1, out = new Array(n);
+          const kc = curve([[0, 12], [.25, 12], [.34, .05]]); // Verschmelzen am Ende ohne Wulst
+          for (let i = 0; i < n; i++) {
+            const t = i / RATE;
+            let b = remap(C.L(t), C.T(t), C.R(t), C.B(t)), r = C.r(t) * k44, p = C.p(t) * k44, bR = C.bR ? C.bR(t) * k44 : 0, th = C.thread ? C.thread(t) * k44 : 0;
+            if (C.bR && t >= .36) { b = { L: -bR, T: -bR, R: bR, B: bR }; r = p = bR; bR = 0; th = 0; } // Tropfen ist eingesaugt: nur noch der Knopf
+            out[i] = frame({ ...b, r, p, bR, thread: th, k: kc(t), tint: C.tint(t), icon: C.icon(t), cOp: C.cOp(t), spec: C.spec(t), open: isOpen,
+              iconR: C.bR && t >= .36 ? b.R : 0 });
+          }
+          return out;
+        };
+        OPENF = run(OPENc, true); CLOSEF = run(CLOSEc, false);
+        PRESS = []; for (let i = 0; i <= 24; i++) { const z = 1 + .16 * i / 24, h = S / 2 * z;
+          PRESS.push(frame({ L: -h, T: -h, R: h, B: h, r: h, p: h, bR: 0, thread: 0, tint: 2 * i / 24, icon: 1, cOp: 0, spec: .6 * i / 24, open: true })); }
+        MENUF = frame({ ...MB, r: cfg.R, p: cfg.R, bR: 0, thread: 0, tint: 1, icon: 0, cOp: 1, spec: 0, open: true });
+      }
+      // ----- DOM -----
+      const fx = document.createElement("div"); fx.className = "mg";
+      const uid = "mg" + all.length;
+      fx.innerHTML = '<div class="mg-glass"></div><div class="mg-rimbox"></div><div class="mg-rimbox"></div><div class="mg-clip"><div class="mg-content"></div></div>' +
+        '<svg class="mg-rim"><defs>' +
+        '<radialGradient id="' + uid + 's" cx=".32" cy=".22" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+        '<path id="' + uid + 'p" d="M0 0Z"/><clipPath id="' + uid + 'c"><use href="#' + uid + 'p"/></clipPath></defs>' +
+        '<g class="mg-g"><g clip-path="url(#' + uid + 'c)"><use class="mg-spec" href="#' + uid + 'p" fill="url(#' + uid + 's)" opacity="0"/>' +
+        '</g></g></svg><div class="mg-icon"></div>';
+      document.body.appendChild(fx);
+      const shield = document.createElement("div"); shield.className = "mg-shield"; document.body.appendChild(shield);
+      const glass = fx.querySelector(".mg-glass"), clip = fx.querySelector(".mg-clip"), content = fx.querySelector(".mg-content"),
+            rims = fx.querySelectorAll(".mg-rimbox"), shape = fx.querySelector("#" + uid + "p"), g = fx.querySelector(".mg-g"), spec = fx.querySelector(".mg-spec"), icon = fx.querySelector(".mg-icon");
+      content.style.width = cfg.W + "px"; content.style.height = cfg.H + "px"; content.innerHTML = cfg.html;
+      icon.style.width = icon.style.height = S + "px"; icon.style.color = cfg.iconColor || ""; icon.innerHTML = cfg.icon;
+      let cols = null, colCache = {};
+      const tintOf = (tv) => {
+        let c = colCache[tv]; if (c) return c;
+        const a = tv <= 1 ? mix(cols.btn, cols.menu, tv) : mix(cols.menu, cols.press, tv - 1);
+        return colCache[tv] = `rgba(${a[0] | 0},${a[1] | 0},${a[2] | 0},${a[3].toFixed(3)})`;
+      };
+      let last = null;
+      function apply(F) {
+        if (F === last) return; last = F;
+        const gs = glass.style, cs = clip.style;
+        gs.transform = cs.transform = `translate3d(${F.gx}px,${F.gy}px,0)`;
+        gs.width = cs.width = F.gw + "px"; gs.height = cs.height = F.gh + "px";
+        gs.clipPath = gs.webkitClipPath = cs.clipPath = cs.webkitClipPath = F.clip;
+        gs.background = tintOf(F.tv);
+        const r0 = rims[0].style, r1 = rims[1].style;
+        r0.transform = F.rT; r0.width = F.rW; r0.height = F.rH; r0.borderRadius = F.rR;
+        r1.display = F.bOn; if (!F.bOn) { r1.transform = F.bT; r1.width = r1.height = F.bD; r1.borderRadius = "50%"; }
+        shape.setAttribute("d", F.d); g.setAttribute("transform", `translate(${F.gx} ${F.gy})`); spec.setAttribute("opacity", F.spec);
+        content.style.transform = F.cT; content.style.opacity = F.cOp;
+        icon.style.transform = F.iT; icon.style.opacity = F.iOp;
+      }
+      // ----- Ablauf -----
+      let state = "closed", t0 = 0, pressAt = 0, from = 0, lvl = 0, raf = 0, pending = false;
+      const easeOut = x => 1 - Math.pow(1 - x, 3), pick = (arr, t) => arr[Math.min(arr.length - 1, Math.max(0, Math.round(t * RATE)))];
+      const show = () => {
+        bake();
+        const r = cfg.btn.getBoundingClientRect();
+        fx.style.transform = `translate3d(${r.left + r.width / 2}px,${r.top + r.height / 2}px,0)`;
+        const st = getComputedStyle(cfg.btn), c = cfg.colors(st);
+        cols = { btn: parseCol(c.btn), press: parseCol(c.press), menu: parseCol(c.menu) }; colCache = {};
+        last = null; fx.classList.add("on"); cfg.btn.classList.add("mg-hide");
+      };
+      const hide = () => { fx.classList.remove("on", "open"); shield.classList.remove("on"); cfg.btn.classList.remove("mg-hide");
+        content.querySelectorAll(".on").forEach(e => e.classList.remove("on")); };
+      function tick(now) {
+        raf = 0;
+        if (state === "pressing" || state === "unpress") {
+          const k = Math.min(1, (now - pressAt) / 100);
+          lvl = state === "pressing" ? from + (1 - from) * easeOut(k) : from * (1 - easeOut(k));
+          apply(PRESS[Math.round(lvl * 24)]);
+          if (state === "pressing") {
+            if (pending && k >= .9) { state = "opening"; t0 = now; pending = false; apply(OPENF[0]); }
+            else { if (k < 1 || pending) raf = requestAnimationFrame(tick); return; }
+          } else { if (k >= 1) { state = "closed"; lvl = 0; hide(); return; } raf = requestAnimationFrame(tick); return; }
+        }
+        if (state === "opening") {
+          const t = (now - t0) / 1000;
+          if (t >= OPEN.end) { state = "open"; apply(MENUF); fx.classList.add("open"); return; }
+          apply(pick(OPENF, t));
+        } else if (state === "closing") {
+          const t = (now - t0) / 1000;
+          if (t >= CLOSE.end) { state = "closed"; hide(); if (cfg.onClosed) cfg.onClosed(); return; }
+          apply(pick(CLOSEF, t));
+        } else return;
+        raf = requestAnimationFrame(tick);
+      }
+      const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+      function close() {
+        if (state !== "open") return;
+        fx.classList.remove("open"); shield.classList.remove("on");
+        state = "closing"; t0 = performance.now(); kick();
+      }
+      const b = cfg.btn;
+      b.addEventListener("pointerdown", () => {
+        if (!cfg.enabled() || (state !== "closed" && state !== "unpress")) return;
+        if (state === "closed") show();
+        from = state === "unpress" ? lvl : 0; state = "pressing"; pressAt = performance.now(); pending = false; kick();
+      });
+      b.addEventListener("pointerup", () => { if (state !== "pressing") return; pending = true; shield.classList.add("on"); kick(); });
+      const cancel = () => { if (state === "pressing" && !pending) { from = lvl; state = "unpress"; pressAt = performance.now(); kick(); } };
+      b.addEventListener("pointercancel", cancel); b.addEventListener("pointerleave", cancel);
+      shield.addEventListener("pointerdown", (e) => { e.preventDefault(); close(); });
+      content.addEventListener("pointerdown", e => { const x = e.target.closest("button"); if (x) x.classList.add("on"); });
+      content.addEventListener("pointerup", e => { const x = e.target.closest("button"); if (!x || state !== "open") return; if (cfg.onPick) cfg.onPick(x); setTimeout(close, 60); });
+      content.addEventListener("pointercancel", () => content.querySelectorAll(".on").forEach(e => e.classList.remove("on")));
+      const api = {
+        abort() { if (state === "closed") return; cancelAnimationFrame(raf); raf = 0; state = "closed"; hide(); },
+        setIcon(html) { icon.innerHTML = html; },
+        content, bake,
+        // Testhaken
+        _at(kind, t) { if (!fx.classList.contains("on")) show(); apply(kind === "open" ? pick(OPENF, t) : kind === "close" ? pick(CLOSEF, t) : MENUF); },
+        _hide: hide
+      };
+      all.push(api);
+      setTimeout(bake, 700 + all.length * 150);
+      return api;
+    }
+    window.__mgAbort = () => all.forEach(a => a.abort());
+    return { create };
+  })();
+
+  // ---------- Auswählen-Modus in der Seitenleiste (#95) ----------
+  var selecting = false, picked = new Set();
+  const MG_DOTS = '<span class="mg-dots"><i></i><i></i><i></i></span>';
+  const MG_X = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>';
+  const MG_TRASH = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.8 6.6h16.4"/><path d="M9.2 6.4V5a1.6 1.6 0 0 1 1.6-1.6h2.4A1.6 1.6 0 0 1 14.8 5v1.4"/><path d="M5.9 6.8l.9 12.1a2 2 0 0 0 2 1.9h6.4a2 2 0 0 0 2-1.9l.9-12.1"/><path d="M10 10.8v6M14 10.8v6"/></svg>';
+  const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function setSelecting(on) {
+    selecting = on; picked.clear();
+    const sd = $("side"); sd.classList.toggle("selecting", on); sd.classList.remove("has-sel");
+    $("sideMore").__noGlass = !on;
+    $("sideMore").setAttribute("aria-label", on ? "Fertig" : "Mehr");
+    if (!on) moreMorph.setIcon(MG_DOTS);
+    const gb = $("sideGear"); gb.classList.remove("pop"); void gb.offsetWidth; gb.classList.add("pop");
+    updateTrash(); renderSide();
+  }
+  function updateTrash() {
+    const n = selecting ? picked.size : 0, sd = $("side"), had = sd.classList.contains("has-sel"), gb = $("sideGear");
+    sd.classList.toggle("has-sel", n > 0);
+    gb.__noGlass = n > 0; // aktiver Mülleimer: eigene Glas-Verwandlung statt normalem Drücken
+    gb.setAttribute("aria-label", selecting ? "Löschen" : "Einstellungen");
+    if (n > 0 && !had) { gb.classList.remove("lid-pop"); void gb.offsetWidth; gb.classList.add("lid-pop"); }
+    const t = delMorph.content.querySelector("span"); if (t) t.textContent = n === 1 ? "1 Tab löschen" : n + " Tabs löschen";
+  }
+  function deletePicked() {
+    const ids = new Set(picked); if (!ids.size) return;
+    const rows = [...$("sideTabs").children].filter(r => ids.has(r.dataset.id));
+    rows.forEach(r => { r.style.height = r.offsetHeight + "px"; r.style.minHeight = "0"; r.style.overflow = "hidden"; });
+    void document.body.offsetHeight;
+    rows.forEach(r => { r.style.transition = "height .34s cubic-bezier(.32,.72,0,1), opacity .2s ease"; r.style.height = "0px"; r.style.opacity = "0"; });
+    setTimeout(() => {
+      const order = state.tabs.map(t => t.id), ai = order.indexOf(state.activeId);
+      state.tabs = state.tabs.filter(t => !ids.has(t.id));
+      if (!state.tabs.length) state.tabs.push(defaultState().tabs[0]);
+      if (!state.tabs.some(t => t.id === state.activeId)) {
+        let nid = null;
+        for (let i = ai; i >= 0 && !nid; i--) if (!ids.has(order[i])) nid = order[i];
+        for (let i = ai; i < order.length && !nid; i++) if (!ids.has(order[i])) nid = order[i];
+        state.activeId = nid && state.tabs.some(t => t.id === nid) ? nid : state.tabs[0].id;
+      }
+      picked.clear(); lastAdded = -1; commit(); renderSide(); updateTrash();
+    }, 340);
+  }
+  // „…“ → „Auswählen“
+  const moreMorph = Morph.create({
+    btn: $("sideMore"), S: 44, corner: "tr", W: 249, H: 60, R: 30,
+    html: '<button class="mg-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.6"/><path d="M7.6 12.3l3 3 5.8-6.4"/></svg><span>Auswählen</span></button>',
+    icon: MG_DOTS,
+    colors: () => ({ btn: cssVar("--mg-btn"), press: cssVar("--mg-press"), menu: cssVar("--mg-menu") }),
+    enabled: () => !selecting,
+    onPick: () => { moreMorph.setIcon(MG_X); setSelecting(true); }
+  });
+  // Mülleimer → „N Tabs löschen“ (Bestätigung)
+  let delDone = false;
+  const delMorph = Morph.create({
+    btn: $("sideGear"), S: 48, corner: "bl", W: 230, H: 60, R: 30,
+    html: '<button class="mg-row red">' + MG_TRASH.replace('width="24" height="24" ', '') + '<span>Löschen</span></button>',
+    icon: MG_TRASH, iconColor: "#fff",
+    colors: () => { const r = parseColor(cssVar("--red")); return { btn: cssVar("--red"), press: "rgba(" + r.map(v => Math.round(v + (255 - v) * .35)).join(",") + ",1)", menu: cssVar("--mg-menu") }; },
+    enabled: () => selecting && picked.size > 0,
+    onPick: () => { delDone = true; deletePicked(); },
+    onClosed: () => { if (delDone) { delDone = false; setTimeout(() => setSelecting(false), 60); } }
+  });
+  function parseColor(str) {
+    str = String(str || "").trim(); const m = str.match(/^#([0-9a-f]{6})/i);
+    if (m) { const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+    const k = str.match(/[\d.]+/g) || [255, 59, 48]; return [+k[0], +k[1], +k[2]];
+  }
+  $("sideMore").onclick = () => { if (selecting) setSelecting(false); };
+  $("sideMore").__noGlass = true;
+  window.__tallyMorph = { moreMorph, delMorph, setSelecting, picked: () => picked };
+
   // Tabs sortieren: Zeile gedrückt halten (0,38 s), dann hoch/runter ziehen – die anderen weichen aus
   (() => {
     const box = $("sideTabs");
@@ -2172,7 +2609,7 @@
     const cancel = () => { clearTimeout(timer); timer = 0; };
     box.addEventListener("touchstart", (e) => {
       const r = e.target.closest(".side-row");
-      if (!r || e.touches.length > 1) return;
+      if (!r || e.touches.length > 1 || selecting) return;
       row = r; on = false; y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; cancel();
       timer = setTimeout(() => {
         timer = 0; on = true; first = true; window.__reorder = true;
@@ -2488,7 +2925,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#94";
+  const APP_VERSION = "#96";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -2568,7 +3005,7 @@
       btn.style.setProperty("--gy", ((e.clientY - (cy - h / 2)) / h * 100) + "%");
     };
     btn.addEventListener("pointerdown", (e) => {
-      if (btn.disabled) return;
+      if (btn.disabled || btn.__noGlass) return;
       clearTimeout(relT);
       on = true; moved = false; downAt = performance.now();
       const r = btn.getBoundingClientRect();
@@ -2622,7 +3059,7 @@
   document.querySelectorAll(".clicker, .minus").forEach(b => glassPress(b, 1.12, 1.06));
   ["undoBtn", "redoBtn"].forEach(id => glassPress(document.getElementById(id), 1.18, 1.1));
   // Seitenleiste: gleiche Glas-Drück-Animation wie alle anderen Knöpfe
-  ["sideGear", "sideBack", "statBack"].forEach(id => glassPress(document.getElementById(id), 1.34, 1.24));
+  ["sideGear", "sideBack", "statBack", "sideMore"].forEach(id => glassPress(document.getElementById(id), 1.34, 1.24));
   glassPress(document.getElementById("statOpen"), 1.08, 1.06);
   glassPress(document.getElementById("sideNew"), 1.14, 1.08);
 })();
