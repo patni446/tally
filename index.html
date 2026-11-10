@@ -175,7 +175,18 @@
   #paySheet.typing .pay-item:not(.open) { max-height: 0; opacity: 0; background-image: none; }
   #paySheet.typing .pay-item.open { background-image: none; }
   #paySheet.typing .section-label, #paySheet.typing .hint { max-height: 0; opacity: 0; margin-top: 0; margin-bottom: 0; }
+  /* Wie iOS: erst die ersten 4 Tabs, groß ziehen zeigt den Rest (dann scrollbar) */
+  #paySheet .pay-list { max-height: var(--list-h, 52vh); overflow-y: hidden; transition: max-height .5s var(--spring); }
+  #paySheet.expanded .pay-list { overflow-y: auto; }
+  #paySheet.dragging .pay-list { transition: none; }
   #paySheet.typing .pay-list { max-height: 400px; }
+  /* Hinweis, dass man das Pop-up ziehen kann: Griff oben + nächster Tab schaut unten angeschnitten raus */
+  #paySheet .grabber { position: absolute; top: 7px; left: 50%; width: 36px; height: 5px; margin-left: -18px; border-radius: 3px;
+    background: var(--label3); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
+  #paySheet.can-grow .grabber { opacity: 1; }
+  /* angeschnittener 5. Tab nur blasser (keine Maske – die hat beim Hochfahren auf dem iPhone geruckelt) */
+  #paySheet.can-grow:not(.expanded):not(.typing) .pay-item:nth-child(n+5) { opacity: .4; }
+  #paySheet.nosize .pay-list { transition: none !important; }
   .row-val.flash { animation: flash .6s ease; }
   @keyframes flash { 30% { color: var(--green); transform: scale(1.08); } }
   .row-val { display: inline-block; }
@@ -186,7 +197,7 @@
 
   /* Tabs */
   .tabs {
-    display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; margin: 0 -16px; padding: 14px 16px 2px;
+    display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; margin: -4px -16px -12px; padding: 18px 16px 14px; /* Luft für Drücken/Anheben, Abstände bleiben gleich */
     scroll-padding-inline: 16px; scrollbar-width: none;
     flex: none; touch-action: pan-x; overscroll-behavior: contain; position: relative;
   }
@@ -205,38 +216,85 @@
 
   /* Card */
   .card {
-    background: var(--card); border-radius: 16px; margin-top: 14px; padding: 16px 16px 14px;
-    flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+    background: var(--card); border-radius: 34px; /* = Rundung des Rückgängig-Knopfs (22) + sein Abstand zum Rand (12): Ecken laufen parallel */ margin-top: 14px; padding: 22px 22px 14px; /* mehr Abstand, damit der Inhalt nicht an der runden Ecke klebt */
+    flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; overflow: hidden; position: relative;
   }
+  /* Rückgängig / Wiederholen: Doppelknopf unten rechts in der Strich-Box */
+  .tally { padding-bottom: 64px; }
+  .undo-pill { position: absolute; right: 12px; bottom: 12px; z-index: 2; display: flex; height: 44px; border-radius: 22px; /* 84 × 44, etwas gestaucht */
+    background: var(--btn-glass); box-shadow: var(--rim-gray);
+    -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); }
+  .undo-pill button { width: 42px; height: 44px; border-radius: 22px; display: grid; place-items: center; color: var(--label); transition: opacity .25s ease; }
+  .undo-pill button:first-child { padding-left: 3px; }
+  .undo-pill button:last-child { padding-right: 3px; }
+  .undo-pill svg { width: 22px; height: 22px; }
+  .undo-pill button:disabled { opacity: .3; }
+  .undo-pill .redo svg { transform: scaleX(-1); }
+  /* Erst sichtbar, wenn es etwas rückgängig zu machen gibt – taucht weich auf */
+  /* Wächst aus der Mitte des Knopfes heraus und schrumpft wieder in die Mitte hinein */
+  .undo-pill { opacity: 0; transform: scale(.2); transform-origin: 50% 50%; pointer-events: none;
+    transition: opacity .22s ease .06s, transform .32s cubic-bezier(.5,0,.75,0); }
+  .undo-pill.on { opacity: 1; transform: none; pointer-events: auto;
+    transition: opacity .18s ease, transform .55s var(--bounce); }
   .card-head { display: flex; justify-content: space-between; align-items: baseline; }
   .tab-name { font-size: 20px; font-weight: 600; letter-spacing: .38px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .count { font-size: 15px; color: var(--label2); flex: none; margin-left: 12px; font-variant-numeric: tabular-nums; }
   .tally {
     margin-top: 12px; flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-    display: flex; flex-wrap: wrap; gap: 10px 14px; align-content: flex-start;
+    display: flex; flex-wrap: wrap; gap: 0; align-content: flex-start;
   }
   .tally svg { width: 52px; height: 46px; flex: none; scroll-margin: 6px; }
   .tally line { stroke: var(--tally); stroke-width: 3.8; stroke-linecap: round; }
   .tally line.half { stroke: var(--orange); }
   /* Neu: Strich zeichnet sich grün und wird dann normal */
   /* Farben blenden weich: grün zeichnen, kurz halten, dann langsam zu weiß */
-  .tally line.new { stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw 1.15s linear forwards; }
+  /* Neu: Strich zeichnet sich sichtbar grün von oben nach unten und wird dann normal.
+     Weg: genau rückwärts – erst rot, dann zieht er sich gleichmäßig zurück.
+     Strichmuster = echte Länge (senkrecht 36, schräg 50, halb 18), sonst springt die Animation. */
+  .tally line.new { stroke-dasharray: 36; stroke-dashoffset: 36; animation: draw 1.15s linear forwards; }
+  .tally line.out { stroke-dasharray: 36; stroke-dashoffset: 0; animation: undraw .8s linear forwards; }
   @keyframes draw {
-    0% { stroke-dashoffset: 60; stroke: var(--green); animation-timing-function: cubic-bezier(.2,.7,.3,1); }
-    22% { stroke-dashoffset: 0; stroke: var(--green); }
-    40% { stroke-dashoffset: 0; stroke: var(--green); animation-timing-function: ease-in-out; }
+    0% { stroke-dashoffset: 36; stroke: var(--green); animation-timing-function: cubic-bezier(.4,0,.2,1); }
+    32% { stroke-dashoffset: 0; stroke: var(--green); }
+    45% { stroke-dashoffset: 0; stroke: var(--green); animation-timing-function: ease-in-out; }
     100% { stroke-dashoffset: 0; stroke: var(--tally); }
   }
-  .tally line.half.new { animation-name: drawHalf; }
-  @keyframes drawHalf { 0% { stroke-dashoffset: 60; } 40%, 100% { stroke-dashoffset: 0; } }
-  /* Weg: dieselbe Animation rückwärts – erst rot, dann zieht sich der Strich zurück */
-  .tally line.out { stroke-dasharray: 60; stroke-dashoffset: 0; animation: undraw .8s linear forwards; }
   @keyframes undraw {
-    0% { stroke-dashoffset: 0; stroke: var(--tally); animation-timing-function: ease-in-out; }
-    40% { stroke-dashoffset: 0; stroke: var(--red); animation-timing-function: cubic-bezier(.5,0,.75,.4); }
-    100% { stroke-dashoffset: 60; stroke: var(--red); opacity: .6; }
+    0% { stroke-dashoffset: 0; stroke: var(--tally); animation-timing-function: ease-out; }
+    22% { stroke-dashoffset: 0; stroke: var(--red); animation-timing-function: cubic-bezier(.45,0,.25,1); }
+    100% { stroke-dashoffset: 36; stroke: var(--red); opacity: .5; }
+  }
+  .tally line.d.new { stroke-dasharray: 50; stroke-dashoffset: 50; animation: drawD 1.15s linear forwards; }
+  .tally line.d.out { stroke-dasharray: 50; stroke-dashoffset: 0; animation: undrawD .8s linear forwards; }
+  @keyframes drawD {
+    0% { stroke-dashoffset: 50; stroke: var(--green); animation-timing-function: cubic-bezier(.4,0,.2,1); }
+    32% { stroke-dashoffset: 0; stroke: var(--green); }
+    45% { stroke-dashoffset: 0; stroke: var(--green); animation-timing-function: ease-in-out; }
+    100% { stroke-dashoffset: 0; stroke: var(--tally); }
+  }
+  @keyframes undrawD {
+    0% { stroke-dashoffset: 0; stroke: var(--tally); animation-timing-function: ease-out; }
+    22% { stroke-dashoffset: 0; stroke: var(--red); animation-timing-function: cubic-bezier(.45,0,.25,1); }
+    100% { stroke-dashoffset: 50; stroke: var(--red); opacity: .5; }
+  }
+  .tally line.half.new { stroke-dasharray: 18; stroke-dashoffset: 18; animation: drawH 1.15s linear forwards; }
+  .tally line.half.out { stroke-dasharray: 18; stroke-dashoffset: 0; animation: undrawH .8s linear forwards; }
+  @keyframes drawH {
+    0% { stroke-dashoffset: 18; stroke: var(--green); animation-timing-function: cubic-bezier(.4,0,.2,1); }
+    32% { stroke-dashoffset: 0; stroke: var(--green); }
+    45% { stroke-dashoffset: 0; stroke: var(--green); animation-timing-function: ease-in-out; }
+    100% { stroke-dashoffset: 0; stroke: var(--orange); }
+  }
+  @keyframes undrawH {
+    0% { stroke-dashoffset: 0; stroke: var(--orange); animation-timing-function: ease-out; }
+    22% { stroke-dashoffset: 0; stroke: var(--red); animation-timing-function: cubic-bezier(.45,0,.25,1); }
+    100% { stroke-dashoffset: 18; stroke: var(--red); opacity: .5; }
   }
   .tally svg.half-svg { width: 14px; }
+  /* Datum über den Strichen eines Tages */
+  .day { flex: 0 0 100%; overflow: hidden; padding-bottom: 10px; }
+  .day-lab { margin: 0 2px 4px; font-size: 12px; font-weight: 600; color: var(--label2); letter-spacing: .1px; }
+  .day-st { display: flex; flex-wrap: wrap; gap: 10px 14px; }
   .tally.swap > * { animation: swapIn .28s var(--spring) both; }
   @keyframes swapIn { from { opacity: 0; transform: translate3d(0, 6px, 0); } to { opacity: 1; transform: none; } }
   .card-head, .legend { transition: opacity .2s; }
@@ -245,10 +303,11 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   }
-  .empty { width: 100%; min-height: 100%; flex: 1; display: grid; place-items: center; text-align: center; color: var(--label3); font-size: 15px; }
+  .empty { width: 100%; min-height: 100%; flex: 1; display: grid; place-items: center; text-align: center; color: var(--label3); font-size: 15px; animation: emptyIn .5s ease both; }
+  @keyframes emptyIn { from { opacity: 0; } }
 
   /* Clicker */
-  .clicker-wrap { display: flex; justify-content: center; align-items: center; gap: 0; justify-content: space-evenly; padding: 12px 0; max-width: 520px; margin: 0 auto; }
+  .clicker-wrap { display: flex; justify-content: center; align-items: center; gap: 0; justify-content: space-evenly; padding: 5px 0 19px; /* mittig zwischen Box und Trennlinie (14 px Abstand der Leiste + 5 = 19 = 19) */ max-width: 520px; margin: 0 auto; }
   .clicker, .minus {
     width: min(118px, 31vw); height: min(118px, 31vw); border-radius: 50%; flex: none;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -288,7 +347,10 @@
   .chip .cl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chip.lg { touch-action: pan-x; } /* Tab-Leiste bleibt seitwärts wischbar */
   /* Tabs: Farbwechsel extra langsam und weich */
-  .chip.lg { transition: background-color 1s cubic-bezier(.4,0,.2,1), color .9s cubic-bezier(.4,0,.2,1), box-shadow .8s ease, padding .6s var(--spring) !important; }
+  .chip.lg { transition: background-color 1s cubic-bezier(.4,0,.2,1), color .9s cubic-bezier(.4,0,.2,1), box-shadow .3s ease, padding .6s var(--spring), filter .35s ease, scale .3s var(--bounce) !important; }
+  /* Tab gedrückt halten zum Verschieben: hebt sich an wie in der Seitenleiste */
+  .chip.clift { z-index: 3; scale: 1.1; box-shadow: var(--lift-sh); }
+  .chip.clift:not(.active) { background: var(--lift-bg); } /* deckend, sonst scheint der Tab darunter durch */
 
   /* Unten fixiert: Klicker + Summe */
   .dock {
@@ -315,9 +377,9 @@
   }
   .overlay {
     position: fixed; inset: 0; z-index: 20; background: var(--dim);
-    opacity: 0; pointer-events: none; transition: opacity .38s ease;
+    opacity: 0; pointer-events: none; transition: opacity .3s cubic-bezier(.5,0,.75,0) .06s;
   }
-  .overlay.show { opacity: 1; pointer-events: auto; }
+  .overlay.show { opacity: 1; pointer-events: auto; transition: opacity .2s cubic-bezier(0,0,.2,1); }
   .sheet {
     position: fixed; left: 0; right: 0; bottom: calc(var(--hide-b, 0px) + var(--kb, 0px)); z-index: 21;
     max-width: 560px; margin: 0 auto;
@@ -451,7 +513,7 @@
   /* Genau wie im Knopf-Test: schnell flachdrücken, beim Loslassen federnd zurück */
   /* Bewegung rechnet eine Feder in JS (Bild für Bild) – gleich flüssig mit Finger und Maus.
      CSS blendet nur noch Licht/Aufhellung ein (Deckkraft = ruckelfrei auf dem iPhone). */
-  .lg { transition: background-color .55s cubic-bezier(.4,0,.2,1), color .5s cubic-bezier(.4,0,.2,1), box-shadow .6s cubic-bezier(.4,0,.2,1), padding .35s var(--spring) !important; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  .lg { transition: background-color .55s cubic-bezier(.4,0,.2,1), color .5s cubic-bezier(.4,0,.2,1), box-shadow .6s cubic-bezier(.4,0,.2,1), padding .35s var(--spring), filter .35s ease !important; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   .lg::before {
     content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
     background: var(--press-tint); opacity: 0; transition: opacity .35s ease;
@@ -483,12 +545,193 @@
     -webkit-backdrop-filter: blur(34px) saturate(180%); backdrop-filter: blur(34px) saturate(180%);
     clip-path: var(--sq, none); -webkit-clip-path: var(--sq, none);
   }
+  /* Weicher Wechsel zwischen Hell und Dunkel */
+  html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+    transition: background-color .6s ease, color .6s ease, border-color .6s ease, fill .6s ease, stroke .6s ease, box-shadow .6s ease, opacity .3s ease !important;
+  }
+  /* ---------- Seitenleiste ---------- */
+  /* Grau, von oben bis unten, nur rechts abgerundet (wie in der Claude-App) */
+  :root { --side-r: 36px; --side-w: min(82vw, 330px); --side-bg: #E5E5EA; --side-shadow: 0 10px 34px rgba(0,0,0,.14), 0 0 0 .5px rgba(0,0,0,.06); --side-sel: rgba(255,255,255,.9); }
+  :root[data-theme="dark"] { --side-bg: #1C1C1E; --side-shadow: 0 0 0 .5px rgba(255,255,255,.08); --side-sel: rgba(118,118,128,.24); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --side-bg: #1C1C1E; --side-shadow: 0 0 0 .5px rgba(255,255,255,.08); --side-sel: rgba(118,118,128,.24); } }
+  .app { transition: transform .55s var(--spring); }
+  body.side-open .app { transform: translate3d(var(--side-w), 0, 0); }
+  .side {
+    overflow: hidden;
+    position: fixed; top: 0; bottom: 0; left: 0; width: var(--side-w); z-index: 30;
+    background: var(--side-bg); border-radius: 0 var(--side-r) var(--side-r) 0; /* weniger rund als die Display-Ecken (vorher 62px) */ box-shadow: var(--side-shadow);
+    display: flex; flex-direction: column;
+    padding: calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 12px);
+    transform: translate3d(calc(-100% - 40px), 0, 0); transition: transform .55s var(--spring), visibility 0s linear .55s;
+    visibility: hidden; touch-action: pan-y;
+  }
+  body.side-open .side { transform: none; visibility: visible; transition: transform .55s var(--spring), visibility 0s; }
+  .side.dragging, body.side-open .side.dragging { transition: none; }
+  .side-scrim { position: fixed; top: 0; bottom: 0; right: 0; left: 0; /* auch hinter den runden Ecken abdunkeln */ z-index: 29; background: rgba(0,0,0,.28);
+    opacity: 0; pointer-events: none; transition: opacity .45s ease; touch-action: none; }
+  body.side-open .side-scrim { opacity: 1; pointer-events: auto; }
+  .side-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 10px 12px; margin: 0 -10px; }
+  .side-title { font-size: 28px; font-weight: 700; letter-spacing: -.4px; padding: 6px 12px 14px; }
+  .side-sec { font-size: 13px; color: var(--label2); padding: 18px 12px 6px; }
+  /* Tabs sortieren: gedrückt halten und ziehen */
+  #sideTabs .side-row { position: relative; -webkit-touch-callout: none; transition: transform .32s var(--spring), background-color .25s ease, box-shadow .25s ease; }
+  /* Angehobene Zeile: deckend (sonst scheinen die Zeilen darunter durch) und weicher Schatten, der ganz zu sehen ist */
+  :root { --lift-bg: #FFFFFF; --lift-sh: 0 6px 18px rgba(0,0,0,.14), 0 1px 3px rgba(0,0,0,.08); }
+  :root[data-theme="dark"] { --lift-bg: #3A3A3C; --lift-sh: 0 8px 20px rgba(0,0,0,.45); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lift-bg: #3A3A3C; --lift-sh: 0 8px 20px rgba(0,0,0,.45); } }
+  #sideTabs .side-row.lift { z-index: 2; background: var(--lift-bg); box-shadow: var(--lift-sh); }
+  .side-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 0 12px;
+    border-radius: 22px; font-size: 17px; color: var(--label); text-align: left; transition: background-color .25s ease;
+  }
+  .side-row > svg:first-child { width: 21px; height: 21px; flex: none; color: var(--label2); }
+  .side-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side-row .check { width: 18px; height: 18px; color: var(--blue); opacity: 0; }
+  .side-row.sel, .side-row.on { background: var(--side-sel); }
+  .side-row.sel .check { opacity: 1; }
+  .side-row:active { background: var(--fill-press); transition-duration: 0s; }
+  .side-row .sdot { width: 14px; height: 14px; border-radius: 50%; flex: none; margin: 0 3px 0 4px; }
+  .side-row .sval { flex: none; color: var(--label2); font-size: 15px; font-variant-numeric: tabular-nums; }
+  .side-foot { font-size: 12px; color: var(--label3); padding: 18px 12px 0; line-height: 1.5; margin: 0; }
+  .side-bottom { flex: none; display: flex; justify-content: space-between; align-items: center; padding: 8px 4px 0;
+    transition: opacity .3s ease, transform .45s var(--spring); }
+  /* Statistik offen: Zahnrad + „Neuer Tab“ weg, der Knopf „Tab öffnen“ sitzt fest unten an ihrer Stelle */
+  .side.stats .side-bottom { opacity: 0; transform: translate3d(0, 16px, 0); pointer-events: none; }
+  #sideStats { bottom: calc(env(safe-area-inset-bottom) + 12px); }
+  .st-foot { position: sticky; bottom: 0; z-index: 1; padding: 18px 4px 0; margin-top: 2px;
+    background: linear-gradient(to bottom, transparent, var(--side-bg) 18px); }
+  .side-gear { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--label);
+    background: var(--btn-glass); box-shadow: var(--refl, 0 0 #0000), var(--rim-gray); }
+  .side-gear svg { width: 24px; height: 24px; }
+  .side.settings .side-gear { background: var(--fill-press); }
+  /* Haupt- und Einstellungsseite gleiten gegeneinander */
+  .side-scroll, .side-page { transition: transform .5s var(--spring), opacity .35s ease; }
+  .side-page { position: absolute; left: 0; right: 0; padding: 8px 10px 0; top: calc(env(safe-area-inset-top) + 2px); bottom: calc(env(safe-area-inset-bottom) + 70px);
+    overflow-y: auto; overflow-x: hidden; scrollbar-width: none; transform: translate3d(105%, 0, 0); opacity: 0; pointer-events: none; }
+  .side.settings #sidePage, .side.stats #sideStats { transform: none; opacity: 1; pointer-events: auto; }
+  .side.stats .side-scroll { transform: translate3d(-30%, 0, 0); opacity: 0; pointer-events: none; }
+  .side.settings .side-scroll { transform: translate3d(-30%, 0, 0); opacity: 0; pointer-events: none; }
+  .side-head { display: flex; align-items: center; gap: 6px; padding: 4px 4px 8px; font-size: 22px; font-weight: 700; }
+  .side-back { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--label); flex: none;
+    background: var(--btn-glass); box-shadow: var(--refl, 0 0 #0000), var(--rim-gray); margin-right: 4px; }
+  .side-back svg { width: 22px; height: 22px; }
+  .side-new {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 48px; min-width: 148px; padding: 0 18px 0 16px; border-radius: 24px;
+    /* ganz blau wie der Plus-Knopf oben auf dem Hauptbildschirm */
+    background: var(--blue); box-shadow: var(--refl, 0 0 #0000), var(--rim-color); font-size: 17px; font-weight: 600; color: #fff;
+  }
+  .side-new svg { width: 18px; height: 18px; color: #fff; }
+  /* ---------- Statistik pro Tab ---------- */
+  #sideStats { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .side-page::-webkit-scrollbar, .side-scroll::-webkit-scrollbar { display: none; }
+  .side-scroll { scrollbar-width: none; }
+  .side-row .chev2 { width: 13px; height: 13px; flex: none; color: var(--label3); margin-left: -4px; }
+  .st-head { display: flex; align-items: center; gap: 6px; padding: 4px 4px 2px; }
+  .st-head .sdot { width: 14px; height: 14px; border-radius: 50%; flex: none; margin-left: 2px; }
+  .st-head .st-name { flex: 1; min-width: 0; font-size: 22px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .st-now { padding: 10px 12px 2px; font-size: 40px; font-weight: 700; letter-spacing: -.8px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .st-sub { padding: 2px 12px 0; font-size: 15px; color: var(--label2); font-variant-numeric: tabular-nums; }
+  .st-sub b { font-weight: 600; }
+  .st-sub .up { color: var(--green); } .st-sub .down { color: var(--red); }
+  .seg { position: relative; display: flex; margin: 16px 4px 4px; height: 34px; padding: 2px; border-radius: 17px; background: var(--fill); transition: scale .4s var(--bounce); }
+  /* Daumen = unsichtbarer Träger (Position); das Aussehen liegt im ::before. Beim Greifen wächst das ::before
+     in echten Pixeln (nicht per scale) – so bleiben die Ecken sauber rund statt verzerrt/abgeschnitten. */
+  .seg-thumb { position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / 4);
+    transition: translate .45s var(--spring); }
+  .seg-thumb::before { content: ""; position: absolute; inset: 0; border-radius: 15px;
+    background: var(--seg-thumb, #fff); box-shadow: 0 2px 6px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04);
+    transition: inset .45s var(--bounce), border-radius .45s var(--bounce), background-color .3s ease, box-shadow .3s ease; }
+  /* Gegriffen wie iOS 26: klare Glas-Linse, etwas größer als die Leiste, gleitet mit dem Finger; beim Loslassen schrumpft sie zurück */
+  :root { --lens-bg: rgba(255,255,255,.30); --lens-sh: inset 0 1px 1.5px rgba(255,255,255,.9), inset 0 -1px 1.5px rgba(255,255,255,.5), inset 0 0 0 .5px rgba(0,0,0,.14), 0 6px 18px rgba(0,0,0,.16); }
+  :root[data-theme="dark"] { --lens-bg: rgba(255,255,255,.10); --lens-sh: inset 0 1px 1.5px rgba(255,255,255,.55), inset 0 -1px 1.5px rgba(255,255,255,.2), inset 0 0 0 .5px rgba(255,255,255,.3), 0 8px 20px rgba(0,0,0,.35); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lens-bg: rgba(255,255,255,.10); --lens-sh: inset 0 1px 1.5px rgba(255,255,255,.55), inset 0 -1px 1.5px rgba(255,255,255,.2), inset 0 0 0 .5px rgba(255,255,255,.3), 0 8px 20px rgba(0,0,0,.35); } }
+  .seg-thumb.grab { z-index: 2; }
+  .seg-thumb.grab::before { inset: -8px -9px; border-radius: 23px; background: var(--lens-bg); box-shadow: var(--lens-sh);
+    -webkit-backdrop-filter: saturate(170%) brightness(1.06); backdrop-filter: saturate(170%) brightness(1.06); }
+  .seg.grabbing { scale: 1.03; }
+  .seg-thumb.drag { transition: none; }
+  .seg { touch-action: none; -webkit-user-select: none; user-select: none; }
+  .seg button { pointer-events: none; transition: opacity .2s ease; }
+  :root[data-theme="dark"] .seg-thumb { --seg-thumb: #5A5A5E; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg-thumb { --seg-thumb: #5A5A5E; } }
+  .seg button { position: relative; z-index: 1; flex: 1; border-radius: 15px; font-size: 14px; font-weight: 600; color: var(--label); }
+  .stat-chart { position: relative; margin: 38px 4px 0; height: 196px; touch-action: none; }
+  .stat-chart svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .stat-chart .grid { stroke: var(--sep); stroke-width: .5; }
+  .stat-chart .ylab, .stat-chart .xlab { fill: var(--label2); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .stat-chart .ln { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  .stat-chart .ln.draw { animation: stDraw .9s var(--spring) forwards; }
+  @keyframes stDraw { to { stroke-dashoffset: 0; } }
+  .stat-chart .area { opacity: 0; animation: stFade .6s ease .25s forwards; }
+  @keyframes stFade { to { opacity: 1; } }
+  .stat-chart .scrub { opacity: 0; transition: opacity .15s ease; }
+  .stat-chart.scrubbing .scrub { opacity: 1; }
+  .stat-chart.scrubbing .enddot { opacity: 0; }
+  .st-tip { position: absolute; top: -6px; left: 0; transform: translate(-50%, -100%); padding: 4px 10px; border-radius: 12px;
+    background: var(--side-sel); box-shadow: 0 2px 8px rgba(0,0,0,.14); font-size: 13px; font-weight: 600; white-space: nowrap;
+    font-variant-numeric: tabular-nums; pointer-events: none; opacity: 0; transition: opacity .15s ease; }
+  .st-tip span { font-weight: 500; color: var(--label2); margin-right: 6px; }
+  .stat-chart.scrubbing .st-tip { opacity: 1; }
+  .st-empty { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: 13px; color: var(--label2); padding: 0 24px; line-height: 1.4; }
+  .st-list { margin: 18px 0 0; }
+  .st-list .side-row { min-height: 40px; }
+  .st-list .side-row:active { background: none; }
+  .st-list .k { flex: 1; color: var(--label2); font-size: 15px; }
+  .st-list .v { flex: none; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .st-open { display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; margin: 0; border-radius: 24px;
+    background: var(--st-c, var(--blue)); color: var(--st-on, #fff); font-size: 17px; font-weight: 600; box-shadow: var(--rim-color); }
 </style>
 </head>
 <body>
+<!-- Seitenleiste (wie in der Claude-App): gleitet von links herein, die App rutscht nach rechts -->
+<div class="side-scrim" id="sideScrim"></div>
+<aside class="side" id="side" aria-label="Menü">
+  <div class="side-scroll">
+    <div class="side-title">Tally</div>
+    <div class="side-sec">Tabs</div>
+    <div id="sideTabs"></div>
+  </div>
+  <!-- Unterseite: Einstellungen (gleitet innerhalb der Seitenleiste von rechts herein) -->
+  <div class="side-page" id="sidePage">
+    <div class="side-head">
+      <button class="side-back" id="sideBack" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span>Einstellungen</span>
+    </div>
+    <div class="side-sec">Darstellung</div>
+      <button class="side-row" data-theme-opt="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg><span>Automatisch</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="side-row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="side-row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    <p class="side-foot" style="padding-top:8px">„Automatisch“ folgt der Einstellung deines iPhones.</p>
+    <div class="side-sec">Daten</div>
+      <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/></svg><span>Daten exportieren</span></button>
+      <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M6 13v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"/></svg><span>Daten importieren</span></button>
+    <p class="side-foot">Version 9.11. #83<br><span id="diag2"></span></p>
+  </div>
+  <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
+  <div class="side-page" id="sideStats">
+    <div class="st-head">
+      <button class="side-back" id="statBack" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span class="sdot" id="statDot"></span><span class="st-name" id="statName"></span>
+    </div>
+    <div class="st-now" id="statNow"></div>
+    <div class="st-sub" id="statSub"></div>
+    <div class="seg" id="statSeg">
+      <div class="seg-thumb" id="statThumb"></div>
+      <button data-r="7">Woche</button><button data-r="30">Monat</button><button data-r="365">Jahr</button><button data-r="0">Alles</button>
+    </div>
+    <div class="stat-chart" id="statChart"></div>
+    <div class="st-list" id="statList"></div>
+    <div class="st-foot"><button class="st-open" id="statOpen">Tab öffnen</button></div>
+  </div>
+  <div class="side-bottom">
+    <button class="side-gear" id="sideGear" aria-label="Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill-rule="evenodd" d="M9.84 4.19 L10.18 2.17 L13.82 2.17 L14.16 4.19 L15.99 4.95 L17.66 3.76 L20.24 6.34 L19.05 8.01 L19.81 9.84 L21.83 10.18 L21.83 13.82 L19.81 14.16 L19.05 15.99 L20.24 17.66 L17.66 20.24 L15.99 19.05 L14.16 19.81 L13.82 21.83 L10.18 21.83 L9.84 19.81 L8.01 19.05 L6.34 20.24 L3.76 17.66 L4.95 15.99 L4.19 14.16 L2.17 13.82 L2.17 10.18 L4.19 9.84 L4.95 8.01 L3.76 6.34 L6.34 3.76 L8.01 4.95Z M16.10 12 A4.1 4.1 0 1 0 7.90 12 A4.1 4.1 0 1 0 16.10 12Z"/></svg></button>
+    <button class="side-new" id="sideNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Neuer Tab</button>
+  </div>
+</aside>
+
 <div class="app">
   <header>
-    <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill-rule="evenodd" d="M9.84 4.19 L10.18 2.17 L13.82 2.17 L14.16 4.19 L15.99 4.95 L17.66 3.76 L20.24 6.34 L19.05 8.01 L19.81 9.84 L21.83 10.18 L21.83 13.82 L19.81 14.16 L19.05 15.99 L20.24 17.66 L17.66 20.24 L15.99 19.05 L14.16 19.81 L13.82 21.83 L10.18 21.83 L9.84 19.81 L8.01 19.05 L6.34 20.24 L3.76 17.66 L4.95 15.99 L4.19 14.16 L2.17 13.82 L2.17 10.18 L4.19 9.84 L4.95 8.01 L3.76 6.34 L6.34 3.76 L8.01 4.95Z M16.10 12 A4.1 4.1 0 1 0 7.90 12 A4.1 4.1 0 1 0 16.10 12Z"/></svg></button>
+    <button class="gear" id="settingsBtn" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4.5 7h15M4.5 12h15M4.5 17h15"/></svg></button>
     <div class="hbtns">
       <button class="gear" id="payBtn" aria-label="Abrechnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 7.5V6a1.5 1.5 0 0 0-1.5-1.5H6A2.5 2.5 0 0 0 3.5 7v10A2.5 2.5 0 0 0 6 19.5h12a2.5 2.5 0 0 0 2.5-2.5v-7A2.5 2.5 0 0 0 18 7.5H6"/><path d="M16.5 13.75h.01" stroke-width="3"/></svg></button>
       <button class="more" id="addBtn" aria-label="Tab hinzufügen">
@@ -507,6 +750,10 @@
     </div>
     <button type="button" class="legend" id="legend" aria-label="Wert pro Strich ändern"></button>
     <div class="tally" id="tally"></div>
+    <div class="undo-pill" id="undoPill">
+      <button class="undo" id="undoBtn" aria-label="Rückgängig" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L4.5 9l4.5 4.5"/><path d="M5 9h9.75a4.75 4.75 0 0 1 0 9.5H11.5"/></svg></button>
+      <button class="redo" id="redoBtn" aria-label="Wiederholen" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L4.5 9l4.5 4.5"/><path d="M5 9h9.75a4.75 4.75 0 0 1 0 9.5H11.5"/></svg></button>
+    </div>
   </section>
 
 <footer class="dock" id="dock">
@@ -558,6 +805,7 @@
 <!-- Abrechnen: Betrag von einem Tab abziehen -->
 <div class="sheet" id="paySheet">
   <div class="group panel">
+    <div class="grabber" aria-hidden="true"></div>
     <div class="form-head">
       <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
       <h2>Abrechnen</h2>
@@ -583,7 +831,7 @@
       <button class="row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     </div>
-    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #41<br><span id="diag"></span></p>
+    <p class="hint">„Automatisch“ folgt der Einstellung deines iPhones.<br>Version 9.11. #83<br><span id="diag"></span></p>
   </div>
 </div>
 
@@ -679,6 +927,15 @@
   try { const t = localStorage.getItem("tally.theme"); if (t === "light" || t === "dark") theme = t; } catch (e) {}
   const isDark = () => theme === "dark" || (theme === "auto" && darkMQ.matches);
   const hexOf = (key) => colorOf(key)[isDark() ? 1 : 0];
+  // Hell/Dunkel weich überblenden: alle Farben gleiten hinüber.
+  // (Keine Bild-Überblendung – die hat auf dem iPhone den grünen Knopf durch das Milchglas-Pop-up gezeigt.)
+  function smoothTheme(change) {
+    const root = document.documentElement;
+    root.classList.add("theme-anim");
+    change(); reflectSoon();
+    clearTimeout(smoothTheme._t);
+    smoothTheme._t = setTimeout(() => root.classList.remove("theme-anim"), 700);
+  }
   function applyTheme() {
     if (theme === "auto") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", theme);
@@ -715,6 +972,48 @@
 
   let state = loadLocal() || defaultState();
   if (!state.tabs.some(t => t.id === state.activeId)) state.activeId = state.tabs[0].id;
+  // ---------- Verlauf für die Statistik: [Zeit, Betrag] bei jeder Änderung ----------
+  // Ältere Tabs ohne Verlauf starten ab jetzt mit ihrem aktuellen Betrag.
+  function cleanHist(h) {
+    if (!Array.isArray(h)) return null;
+    const out = h.filter(p => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]))
+      .map(p => [Math.round(p[0]), Math.max(0, Math.round(p[1] * 100) / 100)]).sort((a, b) => a[0] - b[0]);
+    return out.length ? out : null;
+  }
+  function recordHist() {
+    const now = Date.now();
+    state.tabs.forEach(t => {
+      const m = moneyOf(t);
+      if (!Array.isArray(t.hist) || !t.hist.length) { t.hist = [[now, m]]; return; }
+      const h = t.hist, last = h[h.length - 1];
+      if (Math.abs(last[1] - m) < .005) return;
+      // schnelle Klicks hintereinander (unter 2 Min.) zu einem Punkt zusammenfassen
+      if (h.length >= 2 && now - last[0] < 120000) {
+        last[0] = now; last[1] = m;
+        if (Math.abs(h[h.length - 2][1] - m) < .005) h.pop();
+      } else h.push([now, m]);
+      if (h.length > 4000) t.hist = h.filter((p, i) => i > 2000 || i % 2 === 0); // Speicher klein halten
+    });
+  }
+  // ---------- Datum pro Strich: t.sd[i] = Tag, an dem Strich i dazukam ("JJJJ-MM-TT"; null = schon vorher da) ----------
+  const dayKey = (d) => { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  function cleanSd(sd, count) {
+    sd = Array.isArray(sd) ? sd.map(x => (typeof x === "string" && /^\d{4}-\d\d-\d\d$/.test(x)) ? x : null) : [];
+    if (sd.length > count) sd = sd.slice(0, count);
+    while (sd.length < count) sd.unshift(null);
+    return sd;
+  }
+  // Neue Striche bekommen das heutige Datum, weggenommene verschwinden vom Ende
+  function syncSd() {
+    state.tabs.forEach(t => {
+      const n = Math.max(0, t.count | 0);
+      if (!Array.isArray(t.sd)) t.sd = [];
+      if (t.sd.length > n) t.sd.length = n;
+      while (t.sd.length < n) t.sd.push(dayKey());
+    });
+  }
+  state.tabs.forEach(t => { t.hist = cleanHist(t.hist); t.sd = cleanSd(t.sd, Math.max(0, t.count | 0)); });
+  recordHist();
   let lastAdded = -1;
   let swapping = false;
 
@@ -738,6 +1037,7 @@
       const l = document.createElementNS(ns, "line");
       l.setAttribute("x1", 2); l.setAttribute("y1", 34);
       l.setAttribute("x2", 46); l.setAttribute("y2", 12);
+      l.classList.add("d");
       if (startIndex + 4 === lastAdded) l.classList.add("new");
       if (startIndex + 4 >= outFrom) l.classList.add("out");
       svg.appendChild(l);
@@ -756,6 +1056,64 @@
     l.setAttribute("class", "half" + (cls ? " " + cls : ""));
     svg.appendChild(l);
     return svg;
+  }
+  // Tageszeile weich auf- bzw. zuklappen (Höhe + Deckkraft), damit nichts springt
+  const EASE = "cubic-bezier(.32,.72,0,1)";
+  function dayIn(el) {
+    if (!el.animate) return;
+    requestAnimationFrame(() => {
+      const h = el.scrollHeight;
+      el.animate([{ height: "0px", opacity: 0, transform: "translateY(-6px)" }, { height: h + "px", opacity: 1, transform: "none" }], { duration: 480, easing: EASE });
+    });
+  }
+  function dayOut(el) {
+    if (!el.animate) return;
+    requestAnimationFrame(() => {
+      const h = el.offsetHeight;
+      el.animate([{ height: h + "px", opacity: 1 }, { height: "0px", opacity: 0 }], { duration: 300, delay: 500, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
+    });
+  }
+  function chipPositions() {
+    const m = new Map();
+    (window.__chips || new Map()).forEach((b, id) => { if (b.isConnected) m.set(id, b.getBoundingClientRect().left); });
+    return m;
+  }
+  function flipChips(firstX) {
+    (window.__chips || new Map()).forEach((b, id) => {
+      const x0 = firstX.get(id);
+      if (x0 == null || !b.animate) return;
+      const dx = x0 - b.getBoundingClientRect().left;
+      if (Math.abs(dx) < 1) return;
+      b.animate([{ translate: dx + "px 0" }, { translate: "0 0" }], { duration: 520, easing: "cubic-bezier(.32,.72,0,1)" });
+    });
+  }
+  // Tab-Leiste live umsortieren (beim Ziehen in der Seitenleiste)
+  function orderChips(ids) {
+    const tabsEl = $("tabs"), chips = window.__chips;
+    if (!chips) return;
+    const firstX = chipPositions();
+    ids.forEach(id => { const b = chips.get(id); if (b) tabsEl.appendChild(b); });
+    flipChips(firstX);
+  }
+  // Formulare ohne echtes Absenden: In Claude (PC-App und iPhone) läuft die App in einem abgeschotteten Rahmen,
+  // der das Absenden von Formularen blockiert – dann passierte beim Haken/„Abziehen“/Enter gar nichts.
+  // Deshalb lösen Knöpfe und Enter das „submit“-Ereignis selbst aus.
+  function bindSubmit(form) {
+    const fire = () => form.dispatchEvent(new Event("submit", { cancelable: true }));
+    form.querySelectorAll('button[type="submit"]').forEach(b => { b.type = "button"; b.addEventListener("click", fire); });
+    form.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches("input")) { e.preventDefault(); fire(); } });
+  }
+  // „Heute“, „Gestern“, „Mo., 3. Nov.“ – ältere Striche ohne Datum: „Früher“
+  function dayLabel(k) {
+    if (!k) return "Früher";
+    const [y, m, d] = k.split("-").map(Number), dt = new Date(y, m - 1, d);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diff = Math.round((today - dt) / 864e5);
+    if (diff === 0) return "Heute";
+    if (diff === 1) return "Gestern";
+    const o = { weekday: "short", day: "numeric", month: "short" };
+    if (y !== today.getFullYear()) o.year = "numeric";
+    return dt.toLocaleDateString("de-DE", o);
   }
   // Ganze Striche + Rest aus dem Betrag
   function strokesOf(t) {
@@ -795,13 +1153,15 @@
     // Tab-Knöpfe bleiben erhalten (nicht neu gebaut) – so laufen Drück-Feder und Farbwechsel flüssig weiter
     const chipEls = window.__chips || (window.__chips = new Map());
     const keep = new Set();
+    const prevOrder = [...tabsEl.children].map(c => c.__id).join();
+    const firstX = chipPositions();
     state.tabs.forEach(t => {
       let b = chipEls.get(t.id);
       if (!b) {
         b = document.createElement("button");
         b.className = "chip";
         b.innerHTML = '<span class="dot"></span><span class="cl"></span>';
-        chipEls.set(t.id, b);
+        chipEls.set(t.id, b); b.__id = t.id;
         glassPress(b, 1.14, 1.08);
       }
       const isActive = t.id === tab.id;
@@ -810,6 +1170,7 @@
       b.querySelector(".dot").style.background = hexOf(t.color);
       b.querySelector(".cl").textContent = t.name;
       b.onclick = () => {
+        if (b._noClick) return;
         if (t.id === state.activeId) { openActions(); return; }
         state.activeId = t.id; lastAdded = -1; swapping = true; commit(false);
       };
@@ -817,6 +1178,7 @@
       keep.add(t.id);
     });
     chipEls.forEach((b, id) => { if (!keep.has(id)) { b.remove(); chipEls.delete(id); } });
+    if (prevOrder && prevOrder !== state.tabs.map(t => t.id).join()) flipChips(firstX);
 
     // Aktiven Tab sichtbar halten (nur seitwärts scrollen)
     const act = tabsEl.querySelector(".chip.active");
@@ -842,7 +1204,8 @@
     halfLater = false;
     const fading = drawn > st.full || halfOut;
     swapping = false; fadeNext = false;
-    shown = { id: tab.id, full: st.full, rest: st.rest };
+    const oldSd = (shown.id === tab.id && shown.sd) || [];
+    shown = { id: tab.id, full: st.full, rest: st.rest, sd: (tab.sd || []).slice() };
     clearTimeout(fadeT);
     if (drawn === 0 && !st.rest && !halfOut) {
       const e = document.createElement("div");
@@ -850,13 +1213,35 @@
       e.textContent = "Noch keine Striche – tippe auf den Knopf.";
       tally.appendChild(e);
     } else {
-      const groups = Math.floor(drawn / 5), r5 = drawn % 5;
-      for (let g = 0; g < groups; g++) tally.appendChild(tallyGroup(5, g * 5, st.full));
-      if (r5) tally.appendChild(tallyGroup(r5, groups * 5, st.full));
+      // Striche nach Tag: kleines Datum drüber, Fünferbündel pro Tag neu
+      const sd = tab.sd || [], dateOf = (i) => (i < sd.length ? sd[i] : oldSd[i]) || null;
+      let cur = null, curDay;
+      const newDay = (day) => {
+        const el = document.createElement("div"); el.className = "day";
+        const lab = document.createElement("div"); lab.className = "day-lab"; lab.textContent = dayLabel(day);
+        const st2 = document.createElement("div"); st2.className = "day-st";
+        el.append(lab, st2); tally.appendChild(el);
+        cur = st2; curDay = day;
+        return el;
+      };
+      const halfHere = st.rest && !(halfNew && drawn > st.full); // halber Strich wird jetzt gezeichnet
+      let a = 0;
+      while (a < drawn) {
+        const day = dateOf(a);
+        let b = a + 1;
+        while (b < drawn && dateOf(b) === day) b++;
+        const el = newDay(day);
+        for (let g = a; g < b; g += 5) cur.appendChild(tallyGroup(Math.min(5, b - g), g, st.full));
+        if (lastAdded === a) dayIn(el);                                   // erster Strich des Tages: Zeile klappt weich auf
+        else if (a >= st.full && !(halfHere && dateOf(st.full) === day)) dayOut(el); // Tag wird leer: nach dem Zurückziehen weich zuklappen
+        a = b;
+      }
+      // Halber Strich (Rest) steht unter seinem eigenen Tag, falls der anders ist
+      if (halfHere && (!cur || dateOf(st.full) !== curDay)) { const el = newDay(dateOf(st.full)); if (halfNew) dayIn(el); }
       // Neuer halber Strich erst nach dem Wegnehmen, damit er gleich an der richtigen Stelle sitzt
       if (st.rest && halfNew && drawn > st.full) halfLater = true;
-      else if (st.rest) tally.appendChild(halfStroke(halfNew ? "new" : ""));
-      else if (halfOut) tally.appendChild(halfStroke("out"));
+      else if (st.rest) cur.appendChild(halfStroke(halfNew ? "new" : ""));
+      else if (halfOut) { if (!cur) dayOut(newDay(dateOf(drawn))); cur.appendChild(halfStroke("out")); }
       if (lastAdded >= 0 && tally.lastElementChild) {
         tally.lastElementChild.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
@@ -876,6 +1261,7 @@
       $("legend").appendChild(document.createTextNode("= " + euro(st.rest)));
     }
     $("rowVal").textContent = euro(valOf(tab));
+    if (typeof statId !== "undefined" && statId && $("side").classList.contains("stats")) renderStats(false);
     $("sumAll").textContent = state.tabs.length > 1 ? "Alle Tabs: " + euro(total) : tab.name;
     reflectSoon();
   }
@@ -890,12 +1276,53 @@
   }
 
   // ---------- Änderungen ----------
+  // ---------- Rückgängig / Wiederholen ----------
+  // Vor jeder Datenänderung wird der vorige Stand gemerkt (nur in dieser Sitzung, max. 60 Schritte).
+  var undoStack = [], redoStack = [], lastSnap = null;
+  const snap = () => JSON.stringify({ tabs: state.tabs, activeId: state.activeId });
   function commit(changedData = true) {
+    syncSd();
+    recordHist();
+    if (changedData && lastSnap) {
+      const now = snap();
+      if (now !== lastSnap) { undoStack.push(lastSnap); if (undoStack.length > 60) undoStack.shift(); redoStack = []; }
+    }
     state.updatedAt = Date.now();
     saveLocal();
     render();
     scheduleRemote();
+    lastSnap = snap();
+    updateUndo();
   }
+  function updateUndo() {
+    $("undoBtn").disabled = !undoStack.length;
+    $("redoBtn").disabled = !redoStack.length;
+    const on = !!(undoStack.length || redoStack.length);
+    $("undoPill").classList.toggle("on", on);
+    // 30 s ohne Änderung: Knopf blendet wieder aus (die Schritte bleiben gemerkt, er kommt bei der nächsten Änderung zurück)
+    clearTimeout(updateUndo._t);
+    if (on) updateUndo._t = setTimeout(() => $("undoPill").classList.remove("on"), 30000);
+  }
+  function travel(from, to) {
+    if (!from.length) return;
+    const before = active(), bFull = strokesOf(before).full, bId = before.id, bMoney = moneyOf(before);
+    to.push(snap());
+    const d = JSON.parse(from.pop());
+    state.tabs = d.tabs; state.activeId = d.activeId;
+    if (!state.tabs.some(t => t.id === state.activeId)) state.activeId = state.tabs[0].id;
+    const after = active(), aFull = strokesOf(after).full;
+    lastAdded = -1;
+    if (after.id !== bId) swapping = true;                 // anderer Tab betroffen: dorthin wechseln
+    else if (aFull < bFull) fadeNext = true;               // Striche verschwinden rückwärts (rot)
+    else if (aFull > bFull) lastAdded = bFull;             // Strich zeichnet sich wieder (grün)
+    state.updatedAt = Date.now();
+    saveLocal(); render(); scheduleRemote();
+    lastSnap = snap();
+    updateUndo();
+    if (Math.abs(moneyOf(active()) - bMoney) > .004) bumpSum();
+  }
+  $("undoBtn").onclick = () => travel(undoStack, redoStack);
+  $("redoBtn").onclick = () => travel(redoStack, undoStack);
 
   $("clicker").addEventListener("click", () => {
     const t = active();
@@ -928,10 +1355,12 @@
     if (openSheet) openSheet.classList.remove("show");
     openSheet = sheet;
     $("overlay").classList.add("show");
+    document.body.classList.add("sheet-open");
     sheet.classList.add("show");
   }
   function hide() {
     $("overlay").classList.remove("show");
+    document.body.classList.remove("sheet-open");
     if (openSheet) openSheet.classList.remove("show");
     openSheet = null;
     const a = document.activeElement;
@@ -968,7 +1397,7 @@
   // ---------- Daten exportieren / importieren ----------
   function exportCode() {
     const json = JSON.stringify({
-      tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t), off: Number(t.off) || 0 })),
+      tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t), off: Number(t.off) || 0, hist: t.hist || [], sd: t.sd || [] })),
       activeId: state.activeId,
     });
     return "TALLY1:" + btoa(unescape(encodeURIComponent(json)));
@@ -1026,6 +1455,8 @@
         color: COLORS[t.color] ? t.color : "blue",
         value: Number(t.value) > 0 ? Math.round(Number(t.value) * 100) / 100 : VALUE,
         off: Math.min(0, Math.round((Number(t.off) || 0) * 100) / 100),
+        hist: cleanHist(t.hist),
+        sd: cleanSd(t.sd, Math.max(0, Math.floor(Number(t.count) || 0))),
       }));
       state = { tabs, activeId: tabs.some(t => t.id === d.activeId) ? d.activeId : tabs[0].id, updatedAt: 0 };
       lastAdded = -1;
@@ -1180,7 +1611,7 @@
     let name = $("nameInput").value.trim();
     if (nameMode === "new") {
       if (!name) name = "Tab " + (state.tabs.length + 1);
-      const t = { id: uid(), name, count: 0, color: pickedColor };
+      const t = { id: uid(), name, count: 0, color: pickedColor, hist: [[Date.now(), 0]] };
       state.tabs.push(t);
       state.activeId = t.id;
       lastAdded = -1;
@@ -1271,12 +1702,13 @@
     }
   }
 
-  darkMQ.addEventListener && darkMQ.addEventListener("change", () => { applyTheme(); render(); });
+  darkMQ.addEventListener && darkMQ.addEventListener("change", () => smoothTheme(() => { applyTheme(); render(); }));
 
   // ---------- Pop-ups nach unten wegwischen (wie iOS) ----------
   document.querySelectorAll(".sheet").forEach(sh => {
     let y0 = null, dy = 0, t0 = 0, moved = false;
     sh.addEventListener("touchstart", (e) => {
+      if (sh.id === "paySheet") { y0 = null; return; } // hat eigene Logik (groß ziehen)
       if (e.touches.length > 1 || e.target.closest("input, textarea, .wheel, .pay-list, .lg")) { y0 = null; return; }
       y0 = e.touches[0].clientY; dy = 0; t0 = Date.now(); moved = false;
     }, { passive: true });
@@ -1383,6 +1815,7 @@
         rv.classList.remove("flash"); void rv.offsetWidth; rv.classList.add("flash");
         setTimeout(() => { inp.value = ""; payHint(item, t); }, 450);
       });
+      bindSubmit(item.querySelector(".pay-form"));
       payHint(item, t);
       box.appendChild(item);
     });
@@ -1399,13 +1832,434 @@
     if (f && go && !go.disabled) f.dispatchEvent(new Event("submit", { cancelable: true }));
     hide();
   };
-  $("payBtn").onclick = () => { $("paySheet").classList.remove("typing"); payOpen = null; renderPay(); show($("paySheet")); };
+  $("payBtn").onclick = () => { $("paySheet").classList.remove("typing"); payOpen = null; renderPay(); paySize(); show($("paySheet")); };
+  // ---------- Abrechnen-Pop-up: kleine und große Stufe wie bei iOS ----------
+  var payExp = false, payBase = 0, payMax = 0;
+  function payLimits() {
+    const sh = $("paySheet"), list = $("payList"), items = [...list.children];
+    payBase = items.slice(0, 4).reduce((a, el) => a + el.offsetHeight, 0) || 216;
+    const full = items.reduce((a, el) => a + el.offsetHeight, 0);
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden";
+    document.body.appendChild(probe); const safeTop = probe.offsetHeight; probe.remove();
+    const rest = sh.offsetHeight - list.offsetHeight; // alles außer der Liste
+    const avail = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--app-h")) || innerHeight;
+    payMax = Math.max(payBase, Math.min(full, avail - safeTop - 12 - rest));
+    // Mehr als 4 Tabs: der 5. schaut 24 px heraus, damit man sieht, dass es weitergeht
+    const grow = payMax > payBase + 1;
+    if (grow) payBase = Math.min(payMax, payBase + 24);
+    $("paySheet").classList.toggle("can-grow", grow);
+  }
+  function paySize() {
+    const sh = $("paySheet");
+    // Größe ohne Animation setzen – sonst schrumpft die Liste, während das Pop-up hochfährt (= Ruckeln)
+    sh.classList.add("nosize");
+    payExp = false; sh.classList.remove("expanded");
+    sh.style.setProperty("--list-h", "9999px");
+    payLimits();
+    sh.style.setProperty("--list-h", payBase + "px");
+    $("payList").scrollTop = 0;
+    void sh.offsetHeight;
+    requestAnimationFrame(() => requestAnimationFrame(() => sh.classList.remove("nosize")));
+  }
+  function paySet(exp) {
+    const sh = $("paySheet");
+    payExp = exp && payMax > payBase + 1;
+    sh.classList.toggle("expanded", payExp);
+    sh.style.setProperty("--list-h", (payExp ? payMax : payBase) + "px");
+    if (!payExp) $("payList").scrollTo({ top: 0, behavior: "smooth" });
+  }
+  (() => {
+    const sh = $("paySheet"), list = $("payList");
+    let y0 = null, t0 = 0, h0 = 0, dy = 0, mode = null, onList = false, curH = 0, drop = 0;
+    sh.addEventListener("touchstart", (e) => {
+      if (e.touches.length > 1 || sh.classList.contains("typing") || e.target.closest("input, .pay-go, .lg")) { y0 = null; return; }
+      y0 = e.touches[0].clientY; t0 = Date.now(); dy = 0; mode = null; drop = 0;
+      onList = !!e.target.closest(".pay-list"); h0 = curH = list.offsetHeight;
+    }, { passive: true });
+    sh.addEventListener("touchmove", (e) => {
+      if (y0 === null) return;
+      dy = e.touches[0].clientY - y0;
+      if (!mode) {
+        if (Math.abs(dy) < 6) return;
+        if (payExp && onList && (list.scrollTop > 0 || dy < 0)) mode = "scroll";       // große Stufe: Liste scrollt normal
+        else if (dy < 0 && payMax <= payBase + 1) mode = "none";                          // nichts zum Aufziehen
+        else mode = "resize";
+      }
+      if (mode !== "resize") return;
+      if (e.cancelable) e.preventDefault();
+      sh.classList.add("dragging");
+      let h = h0 - dy;
+      if (h > payMax) h = payMax + (h - payMax) * .18;                                   // leicht gummiartig über dem Maximum
+      drop = 0;
+      if (h < payBase) { drop = payBase - h; h = payBase; }                              // unter der kleinen Stufe: Pop-up fährt runter
+      curH = h;
+      sh.style.setProperty("--list-h", h + "px");
+      sh.style.transform = drop ? "translate3d(0," + drop + "px,0)" : "";
+      $("overlay").style.opacity = String(Math.max(0, 1 - drop / 400));
+    }, { passive: false });
+    const end = () => {
+      if (y0 === null) return;
+      y0 = null;
+      if (mode !== "resize") return;
+      const v = dy / Math.max(1, Date.now() - t0); // px pro ms, + = nach unten
+      sh.classList.remove("dragging");
+      sh.style.transform = ""; $("overlay").style.opacity = "";
+      if (drop > 110 || (drop > 30 && v > .6)) { hide(); return; }
+      const mid = (payBase + payMax) / 2;
+      paySet(v < -.5 ? true : v > .5 ? false : curH > mid);
+      const stop = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+      sh.addEventListener("click", stop, { capture: true, once: true });
+      setTimeout(() => sh.removeEventListener("click", stop, { capture: true }), 350);
+    };
+    sh.addEventListener("touchend", end); sh.addEventListener("touchcancel", end);
+  })();
 
   // ---------- Einstellungen ----------
   function renderThemeList() {
     document.querySelectorAll("[data-theme-opt]").forEach(b => b.classList.toggle("sel", b.dataset.themeOpt === theme));
   }
-  $("settingsBtn").onclick = () => {
+  // ---------- Seitenleiste ----------
+  function renderSide() {
+    const box = $("sideTabs"); box.textContent = "";
+    state.tabs.forEach(t => {
+      const b = document.createElement("button");
+      b.className = "side-row" + (t.id === state.activeId ? " on" : "");
+      b.innerHTML = '<span class="sdot"></span><span></span><span class="sval"></span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+      b.querySelector(".sdot").style.background = hexOf(t.color);
+      b.children[1].textContent = t.name;
+      b.querySelector(".sval").textContent = euro(moneyOf(t));
+      b.onclick = () => { if (!b._noClick) openStats(t.id); };
+      box.appendChild(b);
+    });
+  }
+  function openSide() {
+    renderThemeList(); renderSide();
+    const vv = window.visualViewport;
+    $("diag2").textContent = [innerHeight, vv ? Math.round(vv.height) : "-", (window.screen && screen.height) || "-",
+      navigator.standalone === true ? "A" : (matchMedia("(display-mode: standalone)").matches ? "S" : "B")].join(" · ");
+    document.body.classList.add("side-open");
+  }
+  function closeSide() {
+    const sd = $("side"); sd.classList.remove("dragging"); sd.style.transform = "";
+    document.querySelector(".app").style.transform = "";
+    document.body.classList.remove("side-open");
+    setTimeout(() => { if (!document.body.classList.contains("side-open")) { sd.classList.remove("settings"); sd.classList.remove("stats"); statId = null; } }, 560);
+  }
+  // ---------- Statistik ----------
+  var statId = null, statRange = 0, statT = null;
+  function openStats(id) {
+    statId = id;
+    const sd = $("side"); sd.classList.remove("settings");
+    $("sideStats").scrollTop = 0;
+    // Farbe des Knopfs sofort setzen, ohne Überblendung von der Farbe des vorher geöffneten Tabs
+    const ob = $("statOpen");
+    ob.style.setProperty("transition", "none", "important");
+    renderStats(true);
+    void ob.offsetWidth;
+    requestAnimationFrame(() => requestAnimationFrame(() => ob.style.removeProperty("transition")));
+    sd.classList.add("stats");
+  }
+  function closeStats() { $("side").classList.remove("stats"); setTimeout(() => { if (!$("side").classList.contains("stats")) statId = null; }, 520); }
+  $("statBack").onclick = closeStats;
+  $("statOpen").onclick = () => {
+    const t = state.tabs.find(x => x.id === statId);
+    if (t && t.id !== state.activeId) { state.activeId = t.id; lastAdded = -1; swapping = true; commit(false); }
+    closeSide();
+  };
+  // Zeitraum-Regler wie bei iOS: antippen springt hin; auf der Auswahl (oder lange gedrückt irgendwo) greift man den Daumen,
+  // er wird größer und lässt sich seitwärts schieben, beim Loslassen rastet er weich auf dem nächsten Feld ein.
+  (() => {
+    const seg = $("statSeg"), th = $("statThumb");
+    const btns = () => [...seg.querySelectorAll("button")];
+    const cellW = () => (seg.clientWidth - 4) / 4;
+    const idxAt = (x) => { const r = seg.getBoundingClientRect(); return Math.max(0, Math.min(3, Math.floor((x - r.left - 2) / cellW()))); };
+    const curIdx = () => Math.max(0, btns().findIndex(b => Number(b.dataset.r) === statRange));
+    let d = null;
+    const grab = () => { d.grabbed = true; th.classList.add("grab"); seg.classList.add("grabbing"); haptic(); };
+    const place = (x) => { th.classList.add("drag"); th.style.translate = x + "px 0"; };
+    seg.addEventListener("pointerdown", (e) => {
+      if (d) return;
+      try { seg.setPointerCapture(e.pointerId); } catch (_) {}
+      const i = idxAt(e.clientX), ci = curIdx();
+      d = { x0: e.clientX, base: ci * cellW(), i0: i, last: ci, grabbed: false, moved: false, timer: 0 };
+      if (i === ci) grab();
+      else d.timer = setTimeout(() => {
+        if (!d || d.moved) return;
+        th.classList.remove("drag"); th.style.translate = (i * 100) + "% 0"; // springt weich hin
+        d.base = i * cellW(); d.last = i; grab();
+      }, 320);
+    });
+    seg.addEventListener("pointermove", (e) => {
+      if (!d) return;
+      const dx = e.clientX - d.x0;
+      if (!d.grabbed) { if (Math.abs(dx) > 8) { d.moved = true; clearTimeout(d.timer); } return; }
+      if (!d.moved && Math.abs(dx) < 3) return;
+      d.moved = true;
+      const max = 3 * cellW(), raw = d.base + dx;
+      const x = Math.max(0, Math.min(max, raw)); // bleibt in der Leiste stecken
+      place(x);
+      const i = Math.max(0, Math.min(3, Math.round(x / cellW())));
+      if (i !== d.last) { d.last = i; haptic(); }
+    });
+    const up = () => {
+      if (!d) return;
+      clearTimeout(d.timer);
+      const g = d; d = null;
+      const i = g.grabbed ? g.last : g.moved ? curIdx() : g.i0;
+      th.classList.remove("grab", "drag"); seg.classList.remove("grabbing");
+      const r = Number(btns()[i].dataset.r), changed = r !== statRange;
+      statRange = r;
+      if (changed) renderStats(true);
+      else th.style.translate = (i * 100) + "% 0";
+    };
+    seg.addEventListener("pointerup", up);
+    seg.addEventListener("pointercancel", up);
+  })();
+  const fmtDay = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "numeric" });
+  const fmtMon = new Intl.DateTimeFormat("de-DE", { month: "short", year: "2-digit" });
+  const fmtTime = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const fmtFull = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "short", year: "numeric" });
+  function niceStep(max) {
+    const raw = max / 3, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+  }
+  function renderStats(anim) {
+    const t = state.tabs.find(x => x.id === statId);
+    if (!t) return;
+    const col = hexOf(t.color), now = Date.now();
+    $("side").style.setProperty("--st-c", col); $("side").style.setProperty("--st-on", colorOf(t.color)[2]);
+    $("statDot").style.background = col;
+    $("statName").textContent = t.name;
+    const st = strokesOf(t);
+    $("statNow").textContent = euro(moneyOf(t));
+    $("statOpen").textContent = t.id === state.activeId ? "Zum Tab" : "Tab öffnen";
+    // Zeitraum
+    const segBtns = [...$("statSeg").querySelectorAll("button")];
+    const si = Math.max(0, segBtns.findIndex(b => Number(b.dataset.r) === statRange));
+    $("statThumb").style.translate = (si * 100) + "% 0"; // eigene translate-Eigenschaft: wird vom Linsen-scale nicht mitvergrößert
+    const h = (t.hist && t.hist.length ? t.hist : [[now, moneyOf(t)]]).filter(p => p[0] <= now);
+    const first = h[0][0];
+    let t0 = statRange ? now - statRange * 864e5 : first;
+    if (!statRange && now - t0 < 36e5) t0 = now - 36e5; // „Alles“ mindestens eine Stunde breit
+    const valAt = (time) => { let v = null; for (const p of h) { if (p[0] <= time) v = p[1]; else break; } return v; };
+    const xs = Math.max(t0, first); // vor der ersten Aufzeichnung gibt es keine Daten
+    const v0 = valAt(xs) ?? h[0][1];
+    const inR = h.filter(p => p[0] > xs);
+    let plus = 0, minus = 0, prev = v0;
+    inR.forEach(p => { const d = p[1] - prev; if (d > 0) plus += d; else minus -= d; prev = p[1]; });
+    const vNow = moneyOf(t), diff = Math.round((vNow - v0) * 100) / 100;
+    const rangeName = { 7: "diese Woche", 30: "diesen Monat", 365: "dieses Jahr", 0: "insgesamt" }[statRange];
+    $("statSub").innerHTML = "";
+    const sp = document.createElement("b");
+    sp.className = diff > 0 ? "up" : diff < 0 ? "down" : "";
+    sp.textContent = (diff > 0 ? "+" : diff < 0 ? "−" : "±") + euro(Math.abs(diff));
+    $("statSub").append(sp, " " + rangeName + " · " + (st.full === 1 ? "1 Strich" : st.full + " Striche"));
+    // Liste
+    const rows = [
+      ["Hinzugefügt", "+" + euro(plus)],
+      ["Abgezogen", minus ? "−" + euro(minus) : euro(0)],
+      ["Höchster Stand", euro(Math.max(v0, ...inR.map(p => p[1]), vNow))],
+      ["Aufgezeichnet seit", fmtFull.format(first)],
+    ];
+    $("statList").innerHTML = rows.map(r => '<div class="side-row"><span class="k"></span><span class="v"></span></div>').join("");
+    [...$("statList").children].forEach((el, i) => { el.querySelector(".k").textContent = rows[i][0]; el.querySelector(".v").textContent = rows[i][1]; });
+    drawChart(t, h, t0, xs, v0, inR, vNow, now, col, anim);
+  }
+  function drawChart(t, h, t0, xs, v0, inR, vNow, now, col, anim) {
+    const box = $("statChart"), W = box.clientWidth || 300, H = 196, padR = 46, padT = 10, padB = 22;
+    const cw = W - padR, ch = H - padT - padB;
+    const maxV = Math.max(v0, vNow, ...inR.map(p => p[1]));
+    const step = maxV > 0 ? niceStep(maxV * 1.05) : 10, top = Math.max(step, Math.ceil(maxV * 1.05 / step) * step);
+    const X = (time) => (time - t0) / Math.max(1, now - t0) * cw, Y = (v) => padT + ch - v / top * ch;
+    const ns = "http://www.w3.org/2000/svg", id = "stg" + Math.random().toString(36).slice(2, 7);
+    let g = "";
+    for (let v = 0; v <= top + 1e-9; v += step) {
+      g += '<line class="grid" x1="0" x2="' + cw + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/>';
+      g += '<text class="ylab" x="' + (cw + 8) + '" y="' + (Y(v) + 4).toFixed(1) + '">' + euro(v) + '</text>';
+    }
+    // Beschriftung unten: Anfang, Mitte, Ende
+    const span = now - t0, lab = (time) => span <= 2 * 864e5 ? fmtTime.format(time) : span <= 120 * 864e5 ? fmtDay.format(time) : fmtMon.format(time);
+    [[0, "start"], [.5, "middle"], [1, "end"]].forEach(([k, a]) => {
+      g += '<text class="xlab" text-anchor="' + a + '" x="' + (k * cw).toFixed(1) + '" y="' + (H - 4) + '">' + lab(t0 + k * span) + '</text>';
+    });
+    // Stufenlinie: der Betrag bleibt gleich, bis sich etwas ändert
+    let d = "M" + X(xs).toFixed(1) + " " + Y(v0).toFixed(1);
+    inR.forEach(p => { d += "H" + X(p[0]).toFixed(1) + "V" + Y(p[1]).toFixed(1); });
+    d += "H" + cw.toFixed(1);
+    const area = d + "V" + Y(0).toFixed(1) + "H" + X(xs).toFixed(1) + "Z";
+    box.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+      '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".32"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs>' +
+      g + '<path class="area" d="' + area + '" fill="url(#' + id + ')"/>' +
+      '<path class="ln" d="' + d + '" stroke="' + col + '"/>' +
+      '<circle class="enddot" cx="' + cw.toFixed(1) + '" cy="' + Y(vNow).toFixed(1) + '" r="4.5" fill="' + col + '" stroke="var(--side-bg)" stroke-width="2"/>' +
+      '<line class="scrub sl" y1="' + padT + '" y2="' + (padT + ch) + '" stroke="var(--label2)" stroke-width="1"/>' +
+      '<circle class="scrub sd" r="5" fill="' + col + '" stroke="var(--side-bg)" stroke-width="2"/>' +
+      '</svg><div class="st-tip"></div>' +
+      (h.length < 2 ? '<div class="st-empty" style="top:38%">Ab jetzt wird jede Änderung aufgezeichnet.</div>' : '');
+    const ln = box.querySelector(".ln");
+    if (anim && ln.getTotalLength) {
+      const L = ln.getTotalLength();
+      ln.style.strokeDasharray = L; ln.style.strokeDashoffset = L; ln.classList.add("draw");
+    } else box.querySelector(".area").style.animation = "none", box.querySelector(".area").style.opacity = 1;
+    // Mit dem Finger über die Linie fahren: Datum und Betrag an dieser Stelle
+    const sl = box.querySelector(".sl"), sdot = box.querySelector(".sd"), tip = box.querySelector(".st-tip");
+    const valAt = (time) => { let v = null; for (const p of h) { if (p[0] <= time) v = p[1]; else break; } return v; };
+    const scrub = (e) => {
+      const r = box.getBoundingClientRect(), x = Math.max(X(xs), Math.min(cw, (e.clientX - r.left) / r.width * W));
+      const time = t0 + x / cw * (now - t0), v = valAt(time) ?? v0;
+      sl.setAttribute("x1", x); sl.setAttribute("x2", x); sdot.setAttribute("cx", x); sdot.setAttribute("cy", Y(v));
+      tip.innerHTML = "<span></span>"; tip.firstChild.textContent = (now - t0 <= 2 * 864e5 ? fmtTime.format(time) : fmtDay.format(time) + " " + fmtTime.format(time)); tip.append(euro(v));
+      const tw = tip.offsetWidth / 2, px = x / W * r.width;
+      tip.style.left = Math.max(tw, Math.min(r.width - tw, px)) + "px";
+      box.classList.add("scrubbing");
+    };
+    box.onpointerdown = (e) => { box.setPointerCapture && box.setPointerCapture(e.pointerId); scrub(e); };
+    box.onpointermove = (e) => { if (box.classList.contains("scrubbing")) scrub(e); };
+    box.onpointerup = box.onpointercancel = () => box.classList.remove("scrubbing");
+  }
+  $("sideScrim").onclick = closeSide;
+  $("sideGear").onclick = () => { renderThemeList(); $("side").classList.remove("stats"); $("side").classList.toggle("settings"); };
+  $("sideBack").onclick = () => $("side").classList.remove("settings");
+  $("sideExport").onclick = () => { closeSide(); setTimeout(() => openData("export"), 250); };
+  $("sideImport").onclick = () => { closeSide(); setTimeout(() => openData("import"), 250); };
+  $("sideNew").onclick = () => { closeSide(); setTimeout(() => $("addBtn").click(), 250); };
+  // Tabs sortieren: Zeile gedrückt halten (0,38 s), dann hoch/runter ziehen – die anderen weichen aus
+  (() => {
+    const box = $("sideTabs");
+    let timer = 0, row = null, y0 = 0, x0 = 0, on = false, rows = [], from = 0, to = 0, h = 44, first = true;
+    const cancel = () => { clearTimeout(timer); timer = 0; };
+    box.addEventListener("touchstart", (e) => {
+      const r = e.target.closest(".side-row");
+      if (!r || e.touches.length > 1) return;
+      row = r; on = false; y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; cancel();
+      timer = setTimeout(() => {
+        timer = 0; on = true; first = true; window.__reorder = true;
+        rows = [...box.children]; from = to = rows.indexOf(row); h = row.offsetHeight;
+        row.classList.add("lift"); row.style.transform = "scale(1.03)"; haptic();
+      }, 380);
+    }, { passive: true });
+    box.addEventListener("touchmove", (e) => {
+      if (!row) return;
+      const t = e.touches[0], dy = t.clientY - y0;
+      if (!on) { if (Math.hypot(t.clientX - x0, dy) > 8) { cancel(); row = null; } return; }
+      if (e.cancelable) e.preventDefault();
+      if (first) { first = false; row.style.transition = "background-color .25s ease, box-shadow .25s ease"; }
+      const d = Math.max(-from * h - 12, Math.min((rows.length - 1 - from) * h + 12, dy));
+      row.style.transform = "translate3d(0," + d + "px,0) scale(1.03)";
+      const nt = Math.max(0, Math.min(rows.length - 1, from + Math.round(d / h)));
+      if (nt === to) return;
+      to = nt; haptic();
+      { const ids = state.tabs.map(x => x.id), [m] = ids.splice(from, 1); ids.splice(to, 0, m); orderChips(ids); } // Tab-Leiste rechts zieht live mit
+      rows.forEach((r, i) => {
+        if (r === row) return;
+        const s = from < to && i > from && i <= to ? -h : from > to && i >= to && i < from ? h : 0;
+        r.style.transform = s ? "translate3d(0," + s + "px,0)" : "";
+      });
+    }, { passive: false });
+    const end = () => {
+      cancel();
+      const r = row; row = null;
+      if (!r || !on) return;
+      on = false;
+      r._noClick = true; setTimeout(() => { r._noClick = false; }, 450);
+      r.style.transition = "transform .28s cubic-bezier(.32,.72,0,1), background-color .25s ease, box-shadow .25s ease";
+      r.style.transform = "translate3d(0," + (to - from) * h + "px,0)";
+      r.classList.remove("lift");
+      setTimeout(() => {
+        window.__reorder = false;
+        if (to !== from) { const [m] = state.tabs.splice(from, 1); state.tabs.splice(to, 0, m); commit(); }
+        renderSide();
+      }, 290);
+    };
+    box.addEventListener("touchend", end); box.addEventListener("touchcancel", end);
+  })();
+  // Tabs auch oben in der Leiste sortieren: Tab gedrückt halten (0,38 s), dann seitwärts ziehen –
+  // die anderen rutschen weich zur Seite (gleiche Animation wie beim Sortieren in der Seitenleiste)
+  (() => {
+    const bar = $("tabs");
+    let timer = 0, chip = null, x0 = 0, y0 = 0, on = false, origLeft = 0;
+    const cancel = () => { clearTimeout(timer); timer = 0; };
+    const list = () => [...bar.children];
+    bar.addEventListener("touchstart", (e) => {
+      const c = e.target.closest(".chip");
+      if (!c || e.touches.length > 1) return;
+      chip = c; on = false; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; cancel();
+      timer = setTimeout(() => {
+        timer = 0; on = true; window.__reorder = true;
+        if (chip.__glassRelease) chip.__glassRelease();
+        origLeft = chip.offsetLeft; chip.classList.add("clift"); haptic();
+      }, 380);
+    }, { passive: true });
+    bar.addEventListener("touchmove", (e) => {
+      if (!chip) return;
+      const t = e.touches[0], dx = t.clientX - x0;
+      if (!on) { if (Math.hypot(dx, t.clientY - y0) > 8) { cancel(); chip = null; } return; }
+      if (e.cancelable) e.preventDefault();
+      const vis = Math.max(0, Math.min(bar.scrollWidth - chip.offsetWidth, origLeft + dx)), mid = vis + chip.offsetWidth / 2;
+      const others = list().filter(c => c !== chip);
+      let idx = others.findIndex(c => c.offsetLeft + c.offsetWidth / 2 > mid);
+      if (idx < 0) idx = others.length;
+      if (idx !== list().indexOf(chip)) {
+        const first = new Map(others.map(c => [c, c.getBoundingClientRect().left]));
+        bar.insertBefore(chip, others[idx] || null);
+        others.forEach(c => {
+          const d = first.get(c) - c.getBoundingClientRect().left;
+          if (Math.abs(d) > 1 && c.animate) c.animate([{ translate: d + "px 0" }, { translate: "0 0" }], { duration: 420, easing: "cubic-bezier(.32,.72,0,1)" });
+        });
+        haptic();
+      }
+      chip.style.translate = (vis - chip.offsetLeft) + "px 0";
+    }, { passive: false });
+    const end = () => {
+      cancel();
+      const c = chip; chip = null;
+      if (!c || !on) return;
+      on = false;
+      c._noClick = true; setTimeout(() => { c._noClick = false; }, 450);
+      const cur = parseFloat(c.style.translate) || 0;
+      c.style.translate = "";
+      if (c.animate && Math.abs(cur) > .5) c.animate([{ translate: cur + "px 0" }, { translate: "0 0" }], { duration: 380, easing: "cubic-bezier(.32,.72,0,1)" });
+      c.classList.remove("clift");
+      setTimeout(() => { window.__reorder = false; }, 400);
+      const ids = list().map(x => x.__id);
+      if (ids.join() !== state.tabs.map(x => x.id).join()) { state.tabs.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id)); commit(); }
+    };
+    bar.addEventListener("touchend", end); bar.addEventListener("touchcancel", end);
+  })();
+  // Nach links wischen schließt die Seitenleiste (folgt dem Finger)
+  (() => {
+    let x0 = null, y0 = 0, dx = 0, t0 = 0, horiz = null;
+    const sd = $("side"), app = document.querySelector(".app");
+    const start = (e) => { if (!document.body.classList.contains("side-open") || e.target.closest(".lg, .stat-chart, .seg")) return; const p = e.touches[0]; x0 = p.clientX; y0 = p.clientY; dx = 0; t0 = Date.now(); horiz = null; };
+    const move = (e) => {
+      if (x0 === null) return;
+      if (window.__reorder) { x0 = null; return; } // beim Sortieren nicht schließen
+      const p = e.touches[0], mx = p.clientX - x0, my = p.clientY - y0;
+      if (horiz === null && Math.hypot(mx, my) > 8) horiz = Math.abs(mx) > Math.abs(my);
+      if (!horiz) return;
+      dx = Math.min(0, mx);
+      sd.classList.add("dragging"); app.style.transition = "none";
+      sd.style.transform = "translate3d(" + dx + "px,0,0)";
+      app.style.transform = "translate3d(calc(var(--side-w) + " + dx + "px),0,0)";
+      if (e.cancelable) e.preventDefault();
+    };
+    const end = () => {
+      if (x0 === null) return;
+      const fast = dx < -30 && Date.now() - t0 < 250;
+      x0 = null; app.style.transition = ""; sd.classList.remove("dragging");
+      if (horiz && (dx < -sd.offsetWidth * .3 || fast)) closeSide();
+      else { sd.style.transform = ""; app.style.transform = ""; }
+    };
+    [sd, $("sideScrim")].forEach(el => {
+      el.addEventListener("touchstart", start, { passive: true });
+      el.addEventListener("touchmove", move, { passive: false });
+      el.addEventListener("touchend", end); el.addEventListener("touchcancel", end);
+    });
+  })();
+  $("settingsBtn").onclick = openSide;
+  $("settingsBtn").__oldSheet = () => {
     renderThemeList();
     // Kleine Messwerte, falls die Pop-ups auf einem Gerät falsch sitzen
     const cs = getComputedStyle(document.documentElement), vv = window.visualViewport;
@@ -1417,7 +2271,7 @@
   document.querySelectorAll("[data-theme-opt]").forEach(b => b.onclick = () => {
     theme = b.dataset.themeOpt;
     try { if (theme === "auto") localStorage.removeItem("tally.theme"); else localStorage.setItem("tally.theme", theme); } catch (e) {}
-    applyTheme(); renderThemeList(); render();
+    smoothTheme(() => { applyTheme(); renderThemeList(); render(); });
   });
   applyTheme();
 
@@ -1549,6 +2403,13 @@
       groups.forEach(g => ro.observe(g));
     } else groups.forEach(shapeGroup);
   };
+  // Strich-Box mit iOS-Ecken (fließender Übergang statt Kreisbogen – sonst wirkt der Übergang zur Rundung wie eine Kante)
+  (() => {
+    const card = document.querySelector(".card");
+    const shape = () => { const w = card.offsetWidth, h = card.offsetHeight; if (!w || !h) return; const p = squirclePath(w, h, 34); card.style.clipPath = p; card.style.webkitClipPath = p; };
+    if (window.ResizeObserver) new ResizeObserver(shape).observe(card);
+    shape();
+  })();
   // Erst nachdem die App sichtbar ist (schnellerer Start)
   requestAnimationFrame(() => setTimeout(shapeAll, 50));
 
@@ -1563,6 +2424,8 @@
     if (e.target.closest && e.target.closest("textarea, .wheel")) return;
     const pl = e.target.closest && e.target.closest(".pay-list");
     if (pl && pl.scrollHeight > pl.clientHeight + 1) return;
+    const ss = e.target.closest && e.target.closest(".side-scroll, #sideStats");
+    if (ss && ss.scrollHeight > ss.clientHeight + 1) return; // Seitenleiste darf scrollen
     const t = e.touches[0];
     const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
     const tally = e.target.closest && e.target.closest(".tally");
@@ -1578,6 +2441,7 @@
   }, { passive: false });
   window.addEventListener("orientationchange", () => setTimeout(fitApp, 300));
   render();
+  lastSnap = snap(); // Ausgangsstand für Rückgängig
   connect();
 
 
@@ -1585,7 +2449,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#41";
+  const APP_VERSION = "#83";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -1621,16 +2485,16 @@
       const b = btn.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2, rad = b.width / 2;
       const parts = [];
       lights.forEach(L => {
-        const none = () => parts.push("inset 0px 0px 7px -3px rgba(" + (L ? L.rgb : "0,0,0") + ",0)");
+        const none = () => parts.push("inset 0px 0px 3px -1px rgba(" + (L ? L.rgb : "0,0,0") + ",0)");
         if (!L || L.el === btn) return none(); // sich selbst nicht
         const nx = Math.max(L.r.left, Math.min(cx, L.r.right)), ny = Math.max(L.r.top, Math.min(cy, L.r.bottom));
         const dx = nx - cx, dy = ny - cy, d = Math.hypot(dx, dy);
         const gap = Math.max(0, d - rad), D = 80;
         if (!d || gap > D) return none();
         const k = Math.pow(1 - gap / D, 1.6), ux = dx / d, uy = dy / d;
-        const a = (.42 * k).toFixed(3), o = 3.5;
-        // Lichtsaum auf der Seite, von der das Licht kommt (dezent)
-        parts.push(`inset ${(-ux * o).toFixed(2)}px ${(-uy * o).toFixed(2)}px 7px -3px rgba(${L.rgb},${a})`);
+        const a = (.24 * k).toFixed(3), o = 2; // gleich stark wie vorher …
+        // … aber nur ein schmaler Lichtsaum am Rand (vorher breit genug, dass er auf dem iPhone den halben Knopf einfärbte)
+        parts.push(`inset ${(-ux * o).toFixed(2)}px ${(-uy * o).toFixed(2)}px 3px -1px rgba(${L.rgb},${a})`);
       });
       btn.style.setProperty("--refl", parts.join(", "));
     });
@@ -1692,9 +2556,36 @@
     };
     ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => btn.addEventListener(ev, up));
     btn.addEventListener("contextmenu", (e) => e.preventDefault());
+    // Für das Verschieben: Druck-Effekt sofort lösen, Finger-Dehnung ignorieren
+    btn.__glassRelease = () => { on = false; clearTimeout(relT); btn.classList.remove("pressed"); st.tsx = 1; st.tsy = 1; st.tox = 0; st.toy = 0; kick(); };
   }
+  bindSubmit($("nameForm")); bindSubmit($("valueForm"));
+  // Haken/X in Pop-ups: Auslösen beim Loslassen auf dem Knopf selbst. Auf dem iPhone ging der Tipp sonst verloren,
+  // wenn beim Antippen die Tastatur zuging und das Pop-up darunter wegrutschte (dann kam kein „click“ am Knopf an).
+  document.querySelectorAll(".form-head .icon-btn").forEach(b => {
+    let r0 = null, armed = false;
+    b.addEventListener("pointerdown", (e) => {
+      r0 = b.getBoundingClientRect(); armed = true;
+      if (e.pointerType !== "mouse") e.preventDefault(); // Eingabefeld behält den Fokus → Tastatur bleibt, nichts verrutscht
+    });
+    b.addEventListener("pointerup", (e) => {
+      if (!armed) return; armed = false;
+      const p = 24, inside = e.clientX >= r0.left - p && e.clientX <= r0.right + p && e.clientY >= r0.top - p && e.clientY <= r0.bottom + p;
+      if (!inside) return;
+      b.__fast = Date.now();
+      b.click(); // löst onclick bzw. das Absenden des Formulars aus
+    });
+    b.addEventListener("pointercancel", () => { armed = false; });
+    // den echten Klick danach schlucken, damit nichts doppelt passiert
+    b.addEventListener("click", (e) => { if (e.isTrusted && b.__fast && Date.now() - b.__fast < 800) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+  });
   document.querySelectorAll(".gear, .more, .form-head .icon-btn").forEach(b => glassPress(b, 1.34, 1.24));
   document.querySelectorAll(".clicker, .minus").forEach(b => glassPress(b, 1.12, 1.06));
+  ["undoBtn", "redoBtn"].forEach(id => glassPress(document.getElementById(id), 1.18, 1.1));
+  // Seitenleiste: gleiche Glas-Drück-Animation wie alle anderen Knöpfe
+  ["sideGear", "sideBack", "statBack"].forEach(id => glassPress(document.getElementById(id), 1.34, 1.24));
+  glassPress(document.getElementById("statOpen"), 1.08, 1.06);
+  glassPress(document.getElementById("sideNew"), 1.14, 1.08);
 })();
 </script>
 </body>
