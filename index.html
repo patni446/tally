@@ -846,7 +846,8 @@
   @keyframes lkOut { to { opacity: 0; scale: 1.08; } }
   html.unlocking .app { animation: lkAppIn .55s cubic-bezier(.32,.72,0,1); }
   @keyframes lkAppIn { from { opacity: 0; scale: .93; } }
-  html.cover:not(.locked) .lk-s, html.cover:not(.locked) .lk-btn { visibility: hidden; }
+  html.cover:not(.locked) .lk-s { visibility: hidden; }
+  .lockscr { cursor: pointer; -webkit-user-select: none; user-select: none; }
   .lk-mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .lockscr .side-title { padding: 0 0 40px; }
   .lk-ic { width: 72px; height: 72px; color: var(--label); }
@@ -879,9 +880,6 @@
   .lk-t { margin-top: 22px; font-size: 22px; font-weight: 700; }
   .lk-s { margin-top: 6px; font-size: 15px; line-height: 1.4; color: var(--label2); max-width: 300px; min-height: 42px; }
   .lk-s.err { color: var(--red); }
-  .lk-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 340px; height: 52px; border-radius: 26px;
-    background: var(--blue); color: #fff; font-size: 17px; font-weight: 600; box-shadow: var(--refl, 0 0 #0000), var(--rim-color); }
-  .lk-btn svg { width: 22px; height: 22px; }
   /* Schalter wie iOS 26 (nach Patricks Video): Daumen 37×24 in 63×28. Beim Umschalten wird der Daumen zur klaren
      Glas-Linse (≈1,68×), gleitet hinüber und wird wieder milchig → weiß. Kein echter input switch (Haptik-Regel). */
   :root { --tgl-off: rgba(120,120,128,.16); }
@@ -914,7 +912,6 @@
     <div class="lk-t">Tally ist gesperrt</div>
     <div class="lk-s" id="lockSub">Entsperre mit Face ID.</div>
   </div>
-  <button type="button" class="lk-btn" id="lockBtn"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15V10a6 6 0 0 1 6-6h5M33 4h5a6 6 0 0 1 6 6v5M44 33v5a6 6 0 0 1-6 6h-5M15 44h-5a6 6 0 0 1-6-6v-5"/><path d="M16 17v4M32 17v4"/><path d="M24 17v9h-2.5"/><path d="M17 32.5c4 3.5 10 3.5 14 0"/></svg><span id="lockBtnT">Mit Face ID entsperren</span></button>
 </div>
 <!-- Seitenleiste (wie in der Claude-App): gleitet von links herein, die App rutscht nach rechts -->
 <div class="side-scrim" id="sideScrim"></div>
@@ -943,7 +940,7 @@
     <div class="side-sec">Daten</div>
       <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
       <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 22.11. #107</p>
+    <p class="side-foot">Version 22.11. #108</p>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -3253,7 +3250,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#107";
+  const APP_VERSION = "#108";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -3465,12 +3462,11 @@
     // ---- Sperrbildschirm ----
     const ic = $("lockIc"), sub = $("lockSub");
     const setSub = (t, err) => { sub.textContent = t; sub.classList.toggle("err", !!err); };
-    const baseSub = () => setSub(lock && lock.demo ? "Vorschau – echtes Face ID gibt es nur in der Home-Bildschirm-App." : "Entsperre mit Face ID.");
+    const baseSub = () => setSub(lock && lock.demo ? "Vorschau – tippe zum Entsperren. Echtes Face ID gibt es nur in der Home-Bildschirm-App." : "Entsperre mit Face ID.");
     function showLock() {
       if (!lock) return;
       try { sessionStorage.removeItem("tally.alive"); } catch (e) {}
       const a = document.activeElement; if (a && a.blur && a !== document.body) a.blur();
-      $("lockBtnT").textContent = lock.demo ? "Entsperren" : "Mit Face ID entsperren";
       baseSub();
       ic.classList.remove("scan", "ok", "no");
       root.classList.remove("cover", "unlocking"); root.classList.add("locked");
@@ -3494,13 +3490,13 @@
         return;
       }
       busy = false; ic.classList.remove("scan");
-      if (auto) return; // automatischer Versuch beim Öffnen: still, der Knopf bleibt
+      if (auto) { setSub("Tippe irgendwo, um es nochmal zu versuchen."); return; } // abgebrochen/weggetippt: kein Endlos-Versuch, ein Tipp startet neu
       setTimeout(() => { void ic.offsetWidth; ic.classList.add("no"); }, 300); // erst zurück zum Gesicht, dann Kopfschütteln
       setTimeout(() => ic.classList.remove("no"), 1000);
-      setSub(err && err.name === "NotAllowedError" ? "Abgebrochen – tippe unten, um es nochmal zu versuchen." : "Face ID hat nicht geklappt. Versuch es nochmal.", true);
+      setSub(err && err.name === "NotAllowedError" ? "Abgebrochen – tippe irgendwo, um es nochmal zu versuchen." : "Face ID hat nicht geklappt – tippe zum erneuten Versuch.", true);
     }
-    $("lockBtn").addEventListener("click", () => unlock(false));
-    glassPress($("lockBtn"), 1.08, 1.06);
+    // Kein Knopf mehr: Face ID startet beim Öffnen von selbst; danach startet ein Tipp irgendwo auf den Bildschirm neu
+    $("lockScr").addEventListener("click", () => unlock(false));
     // App verlassen: sofort abdecken (auch im App-Umschalter); zurück nach mehr als 1 Min. → Face ID
     document.addEventListener("visibilitychange", () => {
       if (!lock) return;
