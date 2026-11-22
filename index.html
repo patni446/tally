@@ -901,6 +901,68 @@
   .side-row.sw-on span.tgl i { transform: translateX(22px); }
   .side-row.busy span.tgl { opacity: .55; }
   .side-foot.err { color: var(--red); }
+  /* ---------- #109: Hinzufügen mit Betrag + Notiz, Notizen, Archiv, Vergleich (Ring wie Apple Health) ---------- */
+  .clicker { -webkit-touch-callout: none; }
+  #addSheet .form { max-height: calc(var(--app-h, 100vh) - var(--kb, 0px) - env(safe-area-inset-top) - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  #addSheet .form::-webkit-scrollbar { display: none; }
+  .day-notes { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 8px; }
+  .note { display: flex; align-items: center; gap: 7px; max-width: 100%; height: 30px; padding: 0 12px 0 9px; border-radius: 15px; background: var(--fill);
+    font-size: 14px; color: var(--label); text-align: left; transition: background-color .2s ease; }
+  .note:active { background: var(--fill-press); }
+  .note svg { width: 15px; height: 15px; flex: none; color: var(--label2); }
+  .note .nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .note .na { flex: none; color: var(--green); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .st-note .k { display: flex; flex-direction: column; min-width: 0; }
+  .st-note .k em { font-style: normal; font-size: 12px; color: var(--label3); }
+  .st-note .k span { color: var(--label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .st-note .v { color: var(--green); }
+  /* Archiv in der Seitenleiste */
+  .arch-head { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; }
+  .arch-head .chev2 { width: 12px; height: 12px; color: var(--label3); transition: transform .35s var(--spring); }
+  .arch-head.open .chev2 { transform: rotate(90deg); }
+  .arch-head[hidden] { display: none; }
+  #sideArch { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--spring); }
+  #sideArch.open { grid-template-rows: 1fr; }
+  #sideArch > div { overflow: hidden; min-height: 0; }
+  #sideArch .side-row { opacity: .6; }
+  .side.selecting .arch-head, .side.selecting #sideArch { opacity: .35; pointer-events: none; }
+  /* Zeile „Vergleich“ */
+  .side-row.side-cmp { min-height: 52px; margin: 0 0 6px; padding: 0 14px 0 10px; border-radius: 26px; background: var(--side-sel); box-shadow: var(--rim-gray); font-weight: 600; }
+  .side-row.side-cmp:active { background: var(--side-sel); }
+  .side-cmp .cm-ic { width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--blue); color: #fff; margin-left: 2px; }
+  .side-cmp .cm-ic svg { width: 19px; height: 19px; }
+  .side.selecting .side-cmp { opacity: .35; pointer-events: none; }
+  /* Seite „Vergleich“ */
+  .side.cmp #sideAll { transform: none; opacity: 1; pointer-events: auto; }
+  .side.cmp .side-scroll { transform: translate3d(-30%, 0, 0); opacity: 0; pointer-events: none; }
+  .side.cmp .side-bottom { opacity: 0; transform: translate3d(0, 16px, 0); pointer-events: none; }
+  #sideAll { bottom: max(4px, calc(env(safe-area-inset-bottom) - 8px)); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .cmp-date { padding: 4px 6px 12px; font-size: 26px; font-weight: 800; letter-spacing: -.3px; }
+  .cmp-card { border-radius: 28px; background: var(--side-sel); padding: 16px 16px 4px; }
+  .cmp-top { display: flex; align-items: center; gap: 14px; padding-bottom: 14px; }
+  .cmp-ring { width: 112px; height: 112px; flex: none; }
+  .cmp-ring svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .cmp-sum { flex: 1; min-width: 0; }
+  .cmp-big { font-size: 30px; font-weight: 800; letter-spacing: -.6px; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cmp-small { margin-top: 4px; font-size: 14px; color: var(--label2); }
+  .cmp-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 12px 2px; text-align: left; color: var(--label);
+    background-image: linear-gradient(var(--sep), var(--sep)); background-repeat: no-repeat; background-position: 0 0; background-size: 100% .5px; transition: opacity .2s ease; }
+  .cmp-row:active { opacity: .6; }
+  .cmp-row i { width: 14px; height: 14px; border-radius: 50%; flex: none; margin-top: 4px; }
+  .cmp-row .cm { flex: 1; min-width: 0; }
+  .cmp-row b { display: block; font-size: 17px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cmp-row small { display: block; margin-top: 2px; font-size: 15px; color: var(--label2); }
+  .cmp-row .cv { flex: none; margin-top: 1px; font-size: 16px; font-weight: 600; color: var(--label2); font-variant-numeric: tabular-nums; }
+  .cmp-about-h { padding: 26px 6px 10px; font-size: 22px; font-weight: 800; }
+  .cmp-about { margin-bottom: 16px; padding: 14px 16px; border-radius: 24px; background: var(--side-sel); font-size: 15px; line-height: 1.45; }
+  /* Action-Button-Anleitung */
+  .sc-steps { margin: 0 6px 14px; padding-left: 20px; font-size: 15px; line-height: 1.5; color: var(--label); }
+  .sc-steps li + li { margin-top: 6px; }
+  .sc-steps b { font-weight: 600; }
+  .sc-link { margin: 0 0 10px; padding: 12px 16px; border-radius: 20px; background: var(--fill); font: 13px/1.35 ui-monospace, Menlo, monospace; word-break: break-all;
+    -webkit-user-select: text; user-select: text; }
+  #scCopy { background: var(--blue); color: #fff; }
+  #scSheet .hint { margin: 10px 6px 0; }
 </style>
 </head>
 <body>
@@ -919,8 +981,11 @@
   <div class="side-scroll">
     <div class="side-title"><svg class="logo" viewBox="0 0 38 34" aria-hidden="true"><line x1="6" y1="5" x2="6" y2="29"/><line x1="14" y1="5" x2="14" y2="29"/><line x1="22" y1="5" x2="22" y2="29"/><line x1="30" y1="5" x2="30" y2="29"/><line class="d" x1="2" y1="24" x2="35" y2="9"/></svg><span class="word">Tally</span><button class="side-more" id="sideMore" aria-label="Mehr"><span class="mg-dots"><i></i><i></i><i></i></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
     <button class="side-row side-debt" id="sideDebtRow"><span class="dt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7.8" r="3.4"/><path d="M2.8 19.5c.7-3.6 3.2-5.6 6.2-5.6 1.6 0 3 .5 4.1 1.5"/><path d="M21.2 13.6a3.1 3.1 0 1 0 0 4.8"/><path d="M15.4 15.2h3.6M15.4 16.9h3.6"/></svg></span><span>Schulden</span><span class="sval" id="sideDebtVal"></span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button class="side-row side-cmp" id="sideCmpRow"><span class="cm-ic"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 3.1A9 9 0 1 0 20.9 13H11z"/><path d="M13 1.6V11h9.4A9.5 9.5 0 0 0 13 1.6z" opacity=".75"/></svg></span><span>Vergleich</span><span class="sval" id="sideCmpVal"></span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <div class="side-sec">Tabs</div>
     <div id="sideTabs"></div>
+    <button class="side-sec arch-head" id="archHead" hidden><span>Archiv</span><span id="archN"></span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <div id="sideArch"><div id="sideArchIn"></div></div>
   </div>
   <!-- Unterseite: Einstellungen (gleitet innerhalb der Seitenleiste von rechts herein) -->
   <div class="side-page" id="sidePage">
@@ -937,10 +1002,13 @@
       <button class="side-row" id="lockRow" role="switch" aria-checked="false"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15V10a6 6 0 0 1 6-6h5M33 4h5a6 6 0 0 1 6 6v5M44 33v5a6 6 0 0 1-6 6h-5M15 44h-5a6 6 0 0 1-6-6v-5"/><path d="M16 17v4M32 17v4"/><path d="M24 17v9h-2.5"/><path d="M17 32.5c4 3.5 10 3.5 14 0"/></svg><span>Mit Face ID sperren</span><span class="tgl" aria-hidden="true"><i><b class="tf"></b><b class="tg"></b></i></span></button>
       <button class="side-row" id="lockNow" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg><span>Jetzt sperren</span></button>
     <p class="side-foot" id="lockHint" style="padding-top:8px"></p>
+    <div class="side-sec">Kurzbefehl</div>
+      <button class="side-row" id="scRow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="3"/><path d="M17 8.5h1.5"/></svg><span>Action-Button einrichten</span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <p class="side-foot" style="padding-top:8px">Tipp: Plus gedrückt halten öffnet „Hinzufügen“ – mit eigenem Betrag und Notiz.</p>
     <div class="side-sec">Daten</div>
       <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
       <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 22.11. #108</p>
+    <p class="side-foot">Version 22.11. #109</p>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -957,6 +1025,20 @@
     <div class="stat-chart" id="statChart"></div>
     <div class="st-list" id="statList"></div>
     <div class="st-foot"><button class="st-open" id="statOpen">Tab öffnen</button></div>
+  </div>
+  <!-- Unterseite: Vergleich aller Tabs (Ring wie in Apple Health) -->
+  <div class="side-page" id="sideAll">
+    <div class="side-head">
+      <button class="side-back" id="cmpBack" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span>Vergleich</span>
+    </div>
+    <div class="cmp-date" id="cmpDate"></div>
+    <div class="cmp-card">
+      <div class="cmp-top"><div class="cmp-ring" id="cmpRing"></div><div class="cmp-sum"><div class="cmp-big" id="cmpBig"></div><div class="cmp-small" id="cmpSmall"></div></div></div>
+      <div id="cmpRows"></div>
+    </div>
+    <div class="cmp-about-h">Über den Vergleich</div>
+    <div class="cmp-about">Hier siehst du, wie sich dein Geld auf deine Tabs verteilt. Jedes Stück im Ring ist so groß wie der Anteil des Tabs an der Summe. Tippe auf einen Tab für seine Statistik. Archivierte Tabs zählen nicht mit.</div>
   </div>
   <!-- Unterseite: Schulden (wer dir wie viel wofür schuldet) -->
   <div class="side-page" id="sideDebts">
@@ -1044,6 +1126,9 @@
       <button class="row" data-act="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5h16"/><path d="M6.5 16v-4M11 16V8M15.5 16v-6M20 16V5.5"/></svg><span>Statistik</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
     <div class="list">
+      <button class="row" data-act="archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4.5" rx="1.5"/><path d="M5 8.5v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9"/><path d="M10 12.5h4"/></svg><span>Tab archivieren</span></button>
+    </div>
+    <div class="list">
       <button class="row destructive" data-act="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9.5 7V5.5a1.5 1.5 0 0 1 1.5-1.5h2a1.5 1.5 0 0 1 1.5 1.5V7"/><path d="M6.5 7l.8 11.2A2 2 0 0 0 9.3 20h5.4a2 2 0 0 0 2-1.8L17.5 7"/><path d="M10.2 11v5M13.8 11v5"/></svg><span>Tab löschen</span></button>
     </div>
   </div>
@@ -1087,6 +1172,46 @@
       <div class="list dt-tabs" id="dTabs"></div>
       <p class="hint" id="debtHint"></p>
     </form>
+  </div>
+</div>
+
+<!-- Hinzufügen: eigener Betrag + Notiz (Plus gedrückt halten / Action-Button) -->
+<div class="sheet" id="addSheet">
+  <div class="group">
+    <form class="form" id="addForm" autocomplete="off">
+      <div class="form-head">
+        <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+        <h2>Hinzufügen</h2>
+        <button type="submit" class="icon-btn ok" aria-label="Hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 12.8l5.6 5.6L20.4 6"/></svg></button>
+      </div>
+      <p class="dt-lab first">Wie viel?</p>
+      <label class="dt-amtf"><input id="qAmt" inputmode="decimal" enterkeyhint="next" placeholder="Betrag" aria-label="Betrag in Euro" autocomplete="off"><span>€</span></label>
+      <div class="dt-names" id="qChips"></div>
+      <p class="dt-lab">Wofür?</p>
+      <input class="input" id="qWhy" name="search-add-why" maxlength="80" placeholder="Notiz (optional)" enterkeyhint="done" autocomplete="off" autocorrect="on" data-enter="blur" data-1p-ignore data-lpignore="true">
+      <p class="dt-lab">In welchen Tab?</p>
+      <div class="list dt-tabs" id="qTabs"></div>
+      <p class="hint" id="qHint"></p>
+    </form>
+  </div>
+</div>
+
+<!-- Action-Button einrichten -->
+<div class="sheet" id="scSheet">
+  <div class="group panel">
+    <div class="form-head">
+      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      <h2>Action-Button</h2>
+      <span class="spacer"></span>
+    </div>
+    <ol class="sc-steps">
+      <li>Tippe unten auf <b>Link kopieren</b>.</li>
+      <li>Öffne die App <b>Kurzbefehle</b> → <b>+</b> → Aktion <b>„URL öffnen“</b> → Link einfügen. Nenne den Kurzbefehl „Tally“.</li>
+      <li><b>Einstellungen</b> → <b>Action-Button</b> → <b>Kurzbefehl</b> → „Tally“ wählen.</li>
+    </ol>
+    <div class="sc-link" id="scLink"></div>
+    <button type="button" class="pill" id="scCopy">Link kopieren</button>
+    <p class="hint" id="scHint">Drückst du dann den Action-Button, öffnet Tally direkt „Hinzufügen“: Betrag, wofür, fertig.</p>
   </div>
 </div>
 
@@ -1248,6 +1373,16 @@
 
   let state = loadLocal() || defaultState();
   if (!state.tabs.some(t => t.id === state.activeId)) state.activeId = state.tabs[0].id;
+  // #109: Notizen pro Tab (t.nt = [{id, d: Tag, a: Betrag, n: Text}]) und Archiv (state.arch = ausgeblendete Tabs)
+  function cleanNt(n) {
+    if (!Array.isArray(n)) return [];
+    return n.filter(x => x && typeof x.n === "string" && x.n.trim() && Number.isFinite(Number(x.a)) && /^\d{4}-\d\d-\d\d$/.test(x.d))
+      .slice(-500).map(x => ({ id: String(x.id || Math.random().toString(36).slice(2, 10)).slice(0, 20), d: x.d, a: Math.round(Number(x.a) * 100) / 100, n: x.n.trim().slice(0, 80) }));
+  }
+  function cleanArch(a) {
+    if (!Array.isArray(a)) return [];
+    return a.filter(t => t && typeof t.id === "string" && typeof t.name === "string" && Number.isFinite(t.count));
+  }
   // ---------- Verlauf für die Statistik: [Zeit, Betrag] bei jeder Änderung ----------
   // Ältere Tabs ohne Verlauf starten ab jetzt mit ihrem aktuellen Betrag.
   function cleanHist(h) {
@@ -1288,7 +1423,9 @@
       while (t.sd.length < n) t.sd.push(dayKey());
     });
   }
-  state.tabs.forEach(t => { t.hist = cleanHist(t.hist); t.sd = cleanSd(t.sd, Math.max(0, t.count | 0)); });
+  state.tabs.forEach(t => { t.hist = cleanHist(t.hist); t.sd = cleanSd(t.sd, Math.max(0, t.count | 0)); t.nt = cleanNt(t.nt); });
+  state.arch = cleanArch(state.arch);
+  state.arch.forEach(t => { t.hist = cleanHist(t.hist); t.sd = cleanSd(t.sd, Math.max(0, t.count | 0)); t.nt = cleanNt(t.nt); });
   // ---------- Schulden (#103): state.debts = [{ id, name, amt, why, date, tab, tn, took, paid }] ----------
   // tab = Tab, von dem abgezogen wurde (null = nur notiert), took = wirklich abgezogener Betrag, paid = Tag der Rückzahlung
   function cleanDebts(a) {
@@ -1512,8 +1649,9 @@
       // Striche nach Tag: kleines Datum drüber, Fünferbündel pro Tag neu
       const sd = tab.sd || [], dateOf = (i) => (i < sd.length ? sd[i] : oldSd[i]) || null;
       let cur = null, curDay;
+      const dayEls = new Map();
       const newDay = (day) => {
-        const el = document.createElement("div"); el.className = "day";
+        const el = document.createElement("div"); el.className = "day"; dayEls.set(day, el);
         const lab = document.createElement("div"); lab.className = "day-lab"; lab.textContent = dayLabel(day);
         const st2 = document.createElement("div"); st2.className = "day-st";
         el.append(lab, st2); tally.appendChild(el);
@@ -1538,6 +1676,19 @@
       if (st.rest && halfNew && drawn > st.full) halfLater = true;
       else if (st.rest) cur.appendChild(halfStroke(halfNew ? "new" : ""));
       else if (halfOut) { if (!cur) dayOut(newDay(dateOf(drawn))); cur.appendChild(halfStroke("out")); }
+      // Notizen des Tages unter seinen Strichen (antippen = löschen)
+      if (tab.nt && tab.nt.length) dayEls.forEach((el, day) => {
+        const list = tab.nt.filter(n => n.d === day); if (!list.length) return;
+        const box = document.createElement("div"); box.className = "day-notes";
+        list.forEach(n => {
+          const b = document.createElement("button"); b.type = "button"; b.className = "note";
+          b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5h14v10l-5 5H5z"/><path d="M14 19.5v-5h5"/></svg><span class="nt"></span><span class="na"></span>';
+          b.querySelector(".nt").textContent = n.n; b.querySelector(".na").textContent = "+" + euro(n.a);
+          b.onclick = () => noteAct(tab.id, n.id);
+          box.appendChild(b);
+        });
+        el.appendChild(box);
+      });
       if (lastAdded >= 0 && tally.lastElementChild) {
         tally.lastElementChild.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
@@ -1575,7 +1726,7 @@
   // ---------- Rückgängig / Wiederholen ----------
   // Vor jeder Datenänderung wird der vorige Stand gemerkt (nur in dieser Sitzung, max. 60 Schritte).
   var undoStack = [], redoStack = [], lastSnap = null;
-  const snap = () => JSON.stringify({ tabs: state.tabs, activeId: state.activeId, debts: state.debts });
+  const snap = () => JSON.stringify({ tabs: state.tabs, activeId: state.activeId, debts: state.debts, arch: state.arch });
   function commit(changedData = true) {
     syncSd();
     recordHist();
@@ -1604,7 +1755,7 @@
     const before = active(), bFull = strokesOf(before).full, bId = before.id, bMoney = moneyOf(before);
     to.push(snap());
     const d = JSON.parse(from.pop());
-    state.tabs = d.tabs; state.activeId = d.activeId; state.debts = cleanDebts(d.debts);
+    state.tabs = d.tabs; state.activeId = d.activeId; state.debts = cleanDebts(d.debts); state.arch = cleanArch(d.arch);
     if (!state.tabs.some(t => t.id === state.activeId)) state.activeId = state.tabs[0].id;
     const after = active(), aFull = strokesOf(after).full;
     lastAdded = -1;
@@ -1682,6 +1833,13 @@
     if (act === "rename") return openName("rename");
     if (act === "value") return openValue();
     if (act === "stats") { const id = state.activeId; hide(); setTimeout(() => { openSide(); openStats(id); }, 120); return; }
+    if (act === "archive") { // ausblenden statt löschen: bleibt mit Verlauf im Archiv der Seitenleiste
+      const i = state.tabs.findIndex(t => t.id === state.activeId);
+      const [t] = state.tabs.splice(i, 1); t.at = Date.now(); state.arch.push(t);
+      if (!state.tabs.length) state.tabs.push(defaultState().tabs[0]);
+      state.activeId = state.tabs[Math.max(0, i - 1)].id;
+      hide(); lastAdded = -1; swapping = true; commit(); return;
+    }
     if (act === "delete") {
       return confirmAction("„" + active().name + "“ und alle Striche darin werden gelöscht.", "Tab löschen", () => {
         const i = state.tabs.findIndex(t => t.id === state.activeId);
@@ -1694,11 +1852,13 @@
   });
 
   // ---------- Daten exportieren / importieren ----------
+  const exTab = (t) => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t), off: Number(t.off) || 0, hist: t.hist || [], sd: t.sd || [], nt: t.nt || [] });
   function exportCode() {
     const json = JSON.stringify({
-      tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t), off: Number(t.off) || 0, hist: t.hist || [], sd: t.sd || [] })),
+      tabs: state.tabs.map(exTab),
       activeId: state.activeId,
       debts: state.debts,
+      arch: state.arch.map(t => Object.assign(exTab(t), { at: t.at || 0 })),
     });
     return "TALLY1:" + btoa(unescape(encodeURIComponent(json)));
   }
@@ -1750,7 +1910,7 @@
     const total = d.tabs.reduce((a, t) => a + (Number(t.count) || 0), 0);
     const nd = cleanDebts(d.debts).length;
     confirmAction(d.tabs.length + " Tabs mit insgesamt " + total + " Strichen" + (nd ? " und " + nd + (nd === 1 ? " Schuld" : " Schulden") : "") + " übernehmen? Die jetzigen Tabs auf diesem Gerät werden ersetzt.", "Importieren", () => {
-      const tabs = d.tabs.map(t => ({
+      const normT = (t) => ({
         id: String(t.id), name: String(t.name).slice(0, 40),
         count: Math.max(0, Math.floor(Number(t.count) || 0)),
         color: Object.prototype.hasOwnProperty.call(COLORS, t.color) ? t.color : "blue",
@@ -1758,8 +1918,11 @@
         off: Math.min(0, Math.round((Number(t.off) || 0) * 100) / 100),
         hist: cleanHist(t.hist),
         sd: cleanSd(t.sd, Math.max(0, Math.floor(Number(t.count) || 0))),
-      }));
-      state = { tabs, activeId: tabs.some(t => t.id === d.activeId) ? d.activeId : tabs[0].id, updatedAt: 0, debts: cleanDebts(d.debts) };
+        nt: cleanNt(t.nt),
+      });
+      const tabs = d.tabs.map(normT);
+      const arch = cleanArch(d.arch).map(t => Object.assign(normT(t), { at: Number(t.at) || Date.now() }));
+      state = { tabs, activeId: tabs.some(t => t.id === d.activeId) ? d.activeId : tabs[0].id, updatedAt: 0, debts: cleanDebts(d.debts), arch };
       lastAdded = -1;
       commit();
     });
@@ -2184,7 +2347,8 @@
     });
   }
   function openSide() {
-    renderThemeList(); renderSide(); updDebts();
+    renderThemeList(); renderSide(); updDebts(); renderArch();
+    { const tot = state.tabs.reduce((a, t) => a + moneyOf(t), 0); $("sideCmpVal").textContent = tot > 0 ? euro(tot) : ""; }
     document.body.classList.add("side-open");
   }
   function closeSide() {
@@ -2192,13 +2356,13 @@
     const sd = $("side"); sd.classList.remove("dragging"); sd.style.transform = "";
     document.querySelector(".app").style.transform = "";
     document.body.classList.remove("side-open");
-    setTimeout(() => { if (!document.body.classList.contains("side-open")) { sd.classList.remove("settings"); sd.classList.remove("stats"); sd.classList.remove("debts"); statId = null; if (selecting) setSelecting(false); } }, 560);
+    setTimeout(() => { if (!document.body.classList.contains("side-open")) { sd.classList.remove("settings"); sd.classList.remove("stats"); sd.classList.remove("debts"); sd.classList.remove("cmp"); statId = null; if (selecting) setSelecting(false); } }, 560);
   }
   // ---------- Statistik ----------
-  var statId = null, statRange = 0, statT = null;
-  function openStats(id) {
-    statId = id;
-    const sd = $("side"); sd.classList.remove("settings"); sd.classList.remove("debts");
+  var statId = null, statRange = 0, statT = null, statFrom = null;
+  function openStats(id, from) {
+    statId = id; statFrom = from || null;
+    const sd = $("side"); sd.classList.remove("settings"); sd.classList.remove("debts"); sd.classList.remove("cmp");
     $("sideStats").scrollTop = 0;
     // Farbe des Knopfs sofort setzen, ohne Überblendung von der Farbe des vorher geöffneten Tabs
     const ob = $("statOpen");
@@ -2208,9 +2372,14 @@
     requestAnimationFrame(() => requestAnimationFrame(() => ob.style.removeProperty("transition")));
     sd.classList.add("stats");
   }
-  function closeStats() { $("side").classList.remove("stats"); setTimeout(() => { if (!$("side").classList.contains("stats")) statId = null; }, 520); }
+  function closeStats() { if (statFrom === "cmp") { renderCmp(false); $("side").classList.add("cmp"); } statFrom = null; $("side").classList.remove("stats"); setTimeout(() => { if (!$("side").classList.contains("stats")) statId = null; }, 520); }
   $("statBack").onclick = closeStats;
   $("statOpen").onclick = () => {
+    const ai = state.arch.findIndex(x => x.id === statId);
+    if (ai >= 0) { // archivierten Tab zurückholen und öffnen
+      const [t] = state.arch.splice(ai, 1); delete t.at; state.tabs.push(t);
+      state.activeId = t.id; lastAdded = -1; swapping = true; commit(); closeSide(); return;
+    }
     const t = state.tabs.find(x => x.id === statId);
     if (t && t.id !== state.activeId) { state.activeId = t.id; lastAdded = -1; swapping = true; commit(false); }
     closeSide();
@@ -2273,8 +2442,9 @@
     const raw = max / 3, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
     return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
   }
+  const findTab = (id) => state.tabs.find(x => x.id === id) || state.arch.find(x => x.id === id) || null;
   function renderStats(anim) {
-    const t = state.tabs.find(x => x.id === statId);
+    const t = findTab(statId);
     if (!t) return;
     const col = hexOf(t.color), now = Date.now();
     $("side").style.setProperty("--st-c", col); $("side").style.setProperty("--st-on", colorOf(t.color)[2]);
@@ -2282,7 +2452,7 @@
     $("statName").textContent = t.name;
     const st = strokesOf(t);
     $("statNow").textContent = euro(moneyOf(t));
-    $("statOpen").textContent = t.id === state.activeId ? "Zum Tab" : "Tab öffnen";
+    $("statOpen").textContent = state.arch.includes(t) ? "Wiederherstellen" : t.id === state.activeId ? "Zum Tab" : "Tab öffnen";
     // Zeitraum
     const segBtns = [...$("statSeg").querySelectorAll("button")];
     const si = Math.max(0, segBtns.findIndex(b => Number(b.dataset.r) === statRange));
@@ -2312,7 +2482,18 @@
       ["Aufgezeichnet seit", fmtFull.format(first)],
     ];
     $("statList").innerHTML = rows.map(r => '<div class="side-row"><span class="k"></span><span class="v"></span></div>').join("");
+    const notes = (t.nt || []).slice(-40).reverse();
     [...$("statList").children].forEach((el, i) => { el.querySelector(".k").textContent = rows[i][0]; el.querySelector(".v").textContent = rows[i][1]; });
+    if (notes.length) {
+      const sec = document.createElement("div"); sec.className = "side-sec"; sec.textContent = "Notizen"; $("statList").appendChild(sec);
+      notes.forEach(n => {
+        const r = document.createElement("div"); r.className = "side-row st-note";
+        r.innerHTML = '<span class="k"><span></span><em></em></span><span class="v"></span>';
+        r.querySelector(".k span").textContent = n.n; r.querySelector(".k em").textContent = dayLabel(n.d);
+        r.querySelector(".v").textContent = "+" + euro(n.a);
+        $("statList").appendChild(r);
+      });
+    }
     drawChart(t, h, t0, xs, v0, inR, vNow, now, col, anim);
   }
   function drawChart(t, h, t0, xs, v0, inR, vNow, now, col, anim) {
@@ -2427,7 +2608,7 @@
     $("debtPaidSec").style.display = paid.length ? "" : "none";
   }
   function showDebts() {
-    const sd = $("side"); sd.classList.remove("settings"); sd.classList.remove("stats");
+    const sd = $("side"); sd.classList.remove("settings"); sd.classList.remove("stats"); sd.classList.remove("cmp");
     $("sideDebts").scrollTop = 0; renderDebts(); sd.classList.add("debts");
   }
   $("sideDebtRow").onclick = () => { if (!selecting) showDebts(); };
@@ -2547,7 +2728,7 @@
   });
   bindSubmit($("debtForm"));
   $("sideScrim").onclick = closeSide;
-  $("sideGear").onclick = () => { if (selecting) return; renderThemeList(); $("side").classList.remove("stats"); $("side").classList.remove("debts"); $("side").classList.toggle("settings"); };
+  $("sideGear").onclick = () => { if (selecting) return; renderThemeList(); $("side").classList.remove("stats"); $("side").classList.remove("debts"); $("side").classList.remove("cmp"); $("side").classList.toggle("settings"); };
   $("sideBack").onclick = () => $("side").classList.remove("settings");
   $("sideExport").onclick = () => { closeSide(); setTimeout(() => openData("export"), 250); };
   $("sideImport").onclick = () => { closeSide(); setTimeout(() => openData("import"), 250); };
@@ -3226,7 +3407,7 @@
     if (pl && pl.scrollHeight > pl.clientHeight + 1) return;
     const dn = e.target.closest && e.target.closest(".dt-names");
     if (dn && Math.abs(e.touches[0].clientX - tStartX) > Math.abs(e.touches[0].clientY - tStartY)) return; // Namen seitwärts
-    const ss = e.target.closest && e.target.closest(".side-scroll, #sideStats, #sideDebts, .dt-tabs, #debtSheet .form");
+    const ss = e.target.closest && e.target.closest(".side-scroll, #sideStats, #sideDebts, #sideAll, .dt-tabs, #debtSheet .form, #addSheet .form");
     if (ss && ss.scrollHeight > ss.clientHeight + 1) return; // Seitenleiste darf scrollen
     const t = e.touches[0];
     const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
@@ -3250,7 +3431,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#108";
+  const APP_VERSION = "#109";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -3424,6 +3605,189 @@
   });
   document.querySelectorAll(".gear, .more, .form-head .icon-btn").forEach(b => glassPress(b, 1.34, 1.24));
   document.querySelectorAll(".clicker, .minus").forEach(b => glassPress(b, 1.12, 1.06));
+  // ---------- #109 Hinzufügen mit eigenem Betrag + Notiz ----------
+  // Plus gedrückt halten (0,48 s) oder Action-Button (Link …/tally/?quick) öffnet „Hinzufügen“.
+  // Leerer Betrag = 1 Strich. Notiz landet in t.nt und erscheint unter dem Tag im Strich-Kasten und in der Statistik.
+  let qTab = null;
+  function quickAdd(tabId, amt, why) {
+    const t = state.tabs.find(x => x.id === tabId) || active();
+    if (t.id !== state.activeId) { state.activeId = t.id; swapping = true; }
+    lastAdded = -1;
+    const got = moveMoney(t.id, amt);
+    if (why) { (t.nt = t.nt || []).push({ id: uid(), d: dayKey(), a: got, n: why.slice(0, 80) }); }
+    commit(); bumpSum();
+    return got;
+  }
+  function qHint(err) {
+    const h = $("qHint"), t = state.tabs.find(x => x.id === qTab) || active();
+    h.classList.toggle("err", !!err);
+    if (err) { h.textContent = err; return; }
+    const raw = $("qAmt").value.trim(), amt = raw ? parseAmt(raw) : valOf(t), have = moneyOf(t);
+    if (amt === null) { h.textContent = "In „" + t.name + "“ sind " + euro(have) + "."; return; }
+    const n = Math.floor((have + amt) / valOf(t) + 1e-9) - Math.floor(have / valOf(t) + 1e-9); // dazukommende volle Striche
+    h.textContent = t.name + ": " + euro(have) + " + " + euro(amt) + " = " + euro(Math.round((have + amt) * 100) / 100) + (n > 0 ? " (+" + (n === 1 ? "1 Strich" : n + " Striche") + ")" : "") + (raw ? "" : " – ohne Betrag zählt 1 Strich.");
+  }
+  function renderQTabs() {
+    const box = $("qTabs"); box.textContent = "";
+    state.tabs.forEach(t => {
+      const r = document.createElement("button"); r.type = "button";
+      r.className = "row" + (t.id === qTab ? " sel" : "");
+      r.innerHTML = '<span class="dot"></span><span class="nm"></span><span class="row-val"></span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+      r.querySelector(".dot").style.background = hexOf(t.color);
+      r.querySelector(".nm").textContent = t.name; r.querySelector(".row-val").textContent = euro(moneyOf(t));
+      r.onclick = () => { qTab = t.id; box.querySelectorAll(".row").forEach(x => x.classList.toggle("sel", x === r)); renderQChips(); qHint(); };
+      box.appendChild(r);
+    });
+  }
+  function renderQChips() {
+    const box = $("qChips"), t = state.tabs.find(x => x.id === qTab) || active(), v = valOf(t);
+    box.textContent = "";
+    const list = [[euro(v) + " · 1 Strich", v]];
+    [5, 20, 50].filter(x => Math.abs(x - v) > .004).forEach(x => list.push([euro(x), x]));
+    list.forEach(([lab, x]) => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = lab;
+      b.onclick = () => { $("qAmt").value = fmt2.format(x).replace(/,00$/, "").replace(/\./g, ""); qHint(); };
+      box.appendChild(b);
+    });
+    $("qAmt").placeholder = euro(v).replace(" €", "") + " (1 Strich)";
+  }
+  function openQuick(tabId) {
+    qTab = (tabId && state.tabs.some(t => t.id === tabId)) ? tabId : state.activeId;
+    $("qAmt").value = ""; $("qWhy").value = "";
+    renderQChips(); renderQTabs(); qHint();
+    $("addSheet").querySelector(".form").scrollTop = 0;
+    show($("addSheet"));
+  }
+  $("qAmt").addEventListener("input", () => qHint());
+  $("qAmt").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); $("qWhy").focus(); } }, true);
+  $("addForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const t = state.tabs.find(x => x.id === qTab) || active();
+    const raw = $("qAmt").value.trim(), amt = raw ? parseAmt(raw) : valOf(t);
+    if (amt === null) { qHint("Bitte gib einen gültigen Betrag ein."); return; }
+    hide();
+    quickAdd(t.id, amt, $("qWhy").value.trim());
+  });
+  bindSubmit($("addForm"));
+  // Plus gedrückt halten → „Hinzufügen“ (normaler Tipp zählt weiter 1 Strich)
+  (() => {
+    const c = $("clicker"); let tm = 0, x0 = 0, y0 = 0;
+    const stop = () => { clearTimeout(tm); tm = 0; };
+    c.addEventListener("pointerdown", (e) => {
+      x0 = e.clientX; y0 = e.clientY; c._long = false; stop();
+      tm = setTimeout(() => { tm = 0; c._long = true; if (c.__glassRelease) c.__glassRelease(); openQuick(); }, 480);
+    });
+    c.addEventListener("pointermove", (e) => { if (tm && Math.hypot(e.clientX - x0, e.clientY - y0) > 10) stop(); });
+    ["pointerup", "pointercancel"].forEach(ev => c.addEventListener(ev, stop));
+    // Nach dem langen Drücken kein zusätzlicher Strich
+    c.addEventListener("click", (e) => { if (!c._long) return; e.preventDefault(); e.stopImmediatePropagation(); setTimeout(() => { c._long = false; }, 0); }, true);
+    c.addEventListener("contextmenu", (e) => e.preventDefault());
+  })();
+  // Notiz antippen → löschen (das Geld bleibt)
+  function noteAct(tabId, id) {
+    const t = state.tabs.find(x => x.id === tabId), n = t && (t.nt || []).find(x => x.id === id);
+    if (!n) return;
+    confirmAction("Notiz „" + n.n + "“ (" + euro(n.a) + ", " + dayLabel(n.d) + ") löschen? Das Geld bleibt im Tab.", "Notiz löschen", () => {
+      t.nt = t.nt.filter(x => x.id !== id); commit();
+    });
+  }
+  // ---------- #109 Link-Befehle: ?quick öffnet „Hinzufügen“; ?add=Tabname&amt=25&note=Pizza fügt direkt hinzu ----------
+  (() => {
+    const q = new URLSearchParams(location.search), hsh = location.hash.replace(/^#/, "");
+    const quick = q.has("quick") || q.has("neu") || hsh === "quick";
+    const addName = q.get("add");
+    if (!quick && addName === null) return;
+    try { history.replaceState(null, "", location.pathname); } catch (e) {}
+    const byName = (nm) => { nm = String(nm || "").trim().toLowerCase(); const t = nm && state.tabs.find(x => x.name.trim().toLowerCase() === nm); return t ? t.id : null; };
+    const root = document.documentElement;
+    const go = () => {
+      if (root.classList.contains("locked") || root.classList.contains("unlocking")) { setTimeout(go, 250); return; } // erst nach Face ID
+      const tid = byName(addName || q.get("tab")), amt = parseAmt(q.get("amt"));
+      if (addName !== null && amt !== null) quickAdd(tid || state.activeId, amt, (q.get("note") || "").trim());
+      else openQuick(tid);
+    };
+    setTimeout(go, 500);
+  })();
+  // ---------- #109 Action-Button einrichten ----------
+  (() => {
+    const link = (/github\.io$/.test(location.hostname) ? "webapp://" + location.host + location.pathname : "webapp://patni446.github.io/tally/") + "?quick";
+    $("scLink").textContent = link;
+    $("scRow").onclick = () => { $("scHint").classList.remove("err"); $("scHint").textContent = "Drückst du dann den Action-Button, öffnet Tally direkt „Hinzufügen“: Betrag, wofür, fertig."; document.body.classList.add("dt-top"); show($("scSheet")); };
+    $("scCopy").onclick = async () => {
+      let ok = false;
+      try { await navigator.clipboard.writeText(link); ok = true; } catch (e) {}
+      if (!ok) { try { const r = document.createRange(); r.selectNodeContents($("scLink")); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(r); ok = document.execCommand("copy"); } catch (e) {} }
+      $("scHint").textContent = ok ? "Kopiert. Jetzt in Kurzbefehle bei „URL öffnen“ einfügen." : "Kopieren geht hier nicht – halte den Link oben gedrückt und kopiere ihn.";
+      $("scHint").classList.toggle("err", !ok);
+    };
+  })();
+  // ---------- #109 Archiv in der Seitenleiste ----------
+  let archOpen = false;
+  function renderArch() {
+    const head = $("archHead"), box = $("sideArchIn"), n = state.arch.length;
+    head.hidden = !n; $("archN").textContent = n ? "· " + n : "";
+    head.classList.toggle("open", archOpen && !!n); $("sideArch").classList.toggle("open", archOpen && !!n);
+    box.textContent = "";
+    state.arch.slice().reverse().forEach(t => {
+      const b = document.createElement("button"); b.className = "side-row";
+      b.innerHTML = '<span class="sdot"></span><span></span><span class="sval"></span>' + '<svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+      b.querySelector(".sdot").style.background = hexOf(t.color);
+      b.children[1].textContent = t.name; b.querySelector(".sval").textContent = euro(moneyOf(t));
+      b.onclick = () => openStats(t.id);
+      box.appendChild(b);
+    });
+  }
+  $("archHead").onclick = () => { archOpen = !archOpen; renderArch(); };
+  // ---------- #109 Vergleich aller Tabs: Ring wie in Apple Health (Stücke mit runden Enden und Lücken) ----------
+  function ringSvg(items) {
+    const R = 44, SW = 19, C = 2 * Math.PI * R, GAP = SW + 6.5; // sichtbare Lücke = GAP − SW
+    let acc = 0, out = '<svg viewBox="0 0 120 120" aria-hidden="true">';
+    items.forEach(it => {
+      const L = it.f * C, full = items.length === 1;
+      const len = full ? C : Math.max(.01, L - GAP);
+      const rot = full ? -90 : (L < GAP ? acc + L / 2 : acc + GAP / 2) / C * 360 - 90;
+      out += '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="' + it.col + '" stroke-width="' + SW + '" stroke-linecap="' + (full ? "butt" : "round") +
+        '" stroke-dasharray="' + len.toFixed(2) + ' ' + C.toFixed(2) + '" data-len="' + len.toFixed(2) + '" transform="rotate(' + rot.toFixed(2) + ' 60 60)"/>';
+      acc += L;
+    });
+    return out + "</svg>";
+  }
+  function renderCmp(anim) {
+    const list = state.tabs.map(t => ({ t, v: moneyOf(t) })).sort((a, b) => b.v - a.v);
+    const total = list.reduce((a, x) => a + x.v, 0), withMoney = list.filter(x => x.v > 0);
+    $("cmpDate").textContent = "Heute, " + new Date().toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+    const big = $("cmpBig"); big.textContent = total > 0 ? euro(total) : "Keine Daten";
+    big.style.fontSize = big.textContent.length > 10 ? "22px" : big.textContent.length > 8 ? "26px" : "";
+    $("cmpSmall").textContent = total > 0 ? (withMoney.length === 1 ? "in 1 Tab" : "in " + withMoney.length + " Tabs") : "Noch nichts gezählt";
+    const items = total > 0 ? withMoney.map(x => ({ f: x.v / total, col: hexOf(x.t.color) }))
+      : [{ f: .3, col: "rgba(52,199,89,.32)" }, { f: .2, col: "rgba(255,69,58,.32)" }, { f: .5, col: "rgba(10,132,255,.32)" }]; // leer: gedämpfter Platzhalter wie bei Apple
+    const ring = $("cmpRing"); ring.innerHTML = ringSvg(items);
+    if (anim) ring.querySelectorAll("circle").forEach((c, i) => {
+      const L = Number(c.dataset.len);
+      if (c.animate) c.animate([{ strokeDashoffset: L }, { strokeDashoffset: 0 }], { duration: 750, delay: 120 + i * 90, easing: "cubic-bezier(.32,.72,0,1)", fill: "backwards" });
+    });
+    const rows = $("cmpRows"); rows.textContent = "";
+    list.forEach(({ t, v }) => {
+      const b = document.createElement("button"); b.className = "cmp-row";
+      b.innerHTML = '<i></i><span class="cm"><b></b><small></small></span><span class="cv"></span>';
+      b.querySelector("i").style.background = hexOf(t.color);
+      b.querySelector("b").textContent = t.name + ":";
+      const st = strokesOf(t);
+      b.querySelector("small").textContent = v > 0 ? Math.round(v / total * 100) + " % · " + (st.full === 1 ? "1 Strich" : st.full + " Striche") : "Keine Daten";
+      b.querySelector(".cv").textContent = v > 0 ? euro(v) : "--/--";
+      b.onclick = () => openStats(t.id, "cmp");
+      rows.appendChild(b);
+    });
+  }
+  $("sideCmpRow").onclick = () => {
+    if (selecting) return;
+    const sd = $("side"); sd.classList.remove("settings"); sd.classList.remove("stats"); sd.classList.remove("debts");
+    $("sideAll").scrollTop = 0; renderCmp(true); sd.classList.add("cmp");
+  };
+  $("cmpBack").onclick = () => $("side").classList.remove("cmp");
+  glassPress($("sideCmpRow"), 1.08, 1.06);
+  glassPress($("cmpBack"), 1.34, 1.24);
+
   // ---------- Face-ID-Sperre (#106) ----------
   // Passkey (WebAuthn) mit Face ID. Nur Sichtschutz: die Daten bleiben unverschlüsselt im Browser-Speicher.
   // tally.lock = {id} (echter Passkey) oder {demo:true} (Vorschau in der Claude-Ansicht, dort gibt es kein Face ID).
