@@ -707,6 +707,78 @@
   .st-open { display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; margin: 0; border-radius: 24px;
     background: var(--st-c, var(--blue)); color: var(--st-on, #fff); font-size: 17px; font-weight: 600; box-shadow: var(--rim-color); }
 
+
+  /* ---------- Schulden (#103): eigene Seite in der Seitenleiste ---------- */
+  /* auffällig: grün getönte Karte, Symbol im grünen Kreis, Summe grün */
+  :root { --debt-bg: rgba(52,199,89,.16); }
+  :root[data-theme="dark"] { --debt-bg: rgba(48,209,88,.17); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --debt-bg: rgba(48,209,88,.17); } }
+  .side-row.side-debt { min-height: 58px; margin: 2px 0 6px; padding: 0 14px 0 10px; border-radius: 29px; background: var(--debt-bg); box-shadow: var(--rim-gray); font-weight: 600; }
+  .side-row.side-debt:active { background: var(--debt-bg); }
+  .side-debt .dt-ic { width: 38px; height: 38px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--green); color: #fff;
+    box-shadow: 0 3px 10px rgba(52,199,89,.35); }
+  .side-debt .dt-ic svg { width: 22px; height: 22px; margin-left: 1px; }
+  .side-debt .sval { color: var(--green); font-size: 17px; font-weight: 700; }
+  .side-debt .chev2 { color: var(--green); opacity: .7; }
+  .side.selecting .side-debt { opacity: .35; pointer-events: none; }
+  .side.debts #sideDebts { transform: none; opacity: 1; pointer-events: auto; }
+  .side.debts .side-scroll { transform: translate3d(-30%, 0, 0); opacity: 0; pointer-events: none; }
+  .side.debts .side-bottom { opacity: 0; transform: translate3d(0, 16px, 0); pointer-events: none; }
+  #sideDebts { bottom: max(4px, calc(env(safe-area-inset-bottom) - 8px)); display: flex; flex-direction: column; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  #sideDebts > * { flex: none; }
+  #sideDebts > .dt-fill { flex: 1; }
+  .dt-total { padding: 6px 12px 0; font-size: 15px; color: var(--label2); }
+  .dt-now { padding-top: 2px; transition: color .3s ease; }
+  .dt-now.pos { color: var(--green); }
+  .dt-list { display: flex; flex-direction: column; gap: 8px; }
+  .dt-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px 11px 12px; border-radius: 22px; background: var(--side-sel);
+    color: var(--label); text-align: left; transition: background-color .25s ease, opacity .3s ease; }
+  .dt-item:active { background: var(--fill-press); transition-duration: 0s; }
+  .dt-av { width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 17px; font-weight: 700; color: #fff; }
+  .dt-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .dt-name, .dt-why { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dt-name { font-size: 17px; font-weight: 600; }
+  .dt-why { font-size: 14px; color: var(--label2); }
+  .dt-from { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--label3); min-width: 0; }
+  .dt-from i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dt-from span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dt-amt { flex: none; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .dt-item.paid { opacity: .55; }
+  .dt-item.paid .dt-amt { text-decoration: line-through; font-weight: 600; }
+  .dt-empty { padding: 26px 20px; text-align: center; color: var(--label3); font-size: 15px; line-height: 1.45; }
+  .dt-new { gap: 8px; background: var(--blue); color: #fff; }
+  .dt-new svg { width: 22px; height: 22px; margin-left: -4px; }
+  /* Pop-ups der Schulden liegen über der Seitenleiste */
+  body.dt-top .overlay { z-index: 32; }
+  body.dt-top .sheet { z-index: 33; }
+  #debtSheet .form { max-height: calc(var(--app-h, 100vh) - var(--kb, 0px) - env(safe-area-inset-top) - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  #debtSheet .form::-webkit-scrollbar { display: none; }
+  .dt-lab { font-size: 13px; color: var(--label2); margin: 16px 8px 6px; }
+  .dt-lab.first { margin-top: 0; }
+  .dt-amtf { display: flex; align-items: center; height: 48px; padding: 0 18px; border-radius: 24px; background: var(--fill); }
+  .dt-amtf input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--label); font: inherit; font-size: 20px; font-weight: 600;
+    font-variant-numeric: tabular-nums; -webkit-user-select: text; user-select: text; }
+  .dt-amtf input::placeholder { color: var(--label3); font-weight: 500; }
+  .dt-amtf span { font-size: 20px; font-weight: 600; color: var(--label2); }
+  .input.dt-date { -webkit-appearance: none; appearance: none; display: flex; align-items: center; text-align: left; line-height: 48px; }
+  .input.dt-date::-webkit-date-and-time-value { text-align: left; }
+  .dt-names { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 0; scrollbar-width: none; }
+  .dt-names::-webkit-scrollbar { display: none; }
+  .dt-names:empty { display: none; }
+  .dt-names button { flex: none; height: 32px; padding: 0 14px; border-radius: 16px; background: var(--fill); font-size: 15px; color: var(--label); }
+  .dt-names button:active { background: var(--fill-press); }
+  .dt-tabs { max-height: 262px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  .dt-tabs .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; margin: 0 2px 0 4px; }
+  .dt-tabs .dot.none { background: none; box-shadow: inset 0 0 0 2px var(--label3); }
+  .dt-tabs .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dt-tabs .row-val { margin-left: 0; }
+  .dt-tabs .row .check { width: 20px; height: 20px; color: var(--blue); opacity: 0; transition: opacity .2s ease; }
+  .dt-tabs .row.sel .check { opacity: 1; }
+  #debtActSheet .row .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #debtActSheet .row.ok, #debtActSheet .row.ok svg { color: var(--green); }
+  #debtActSheet .confirm-text { margin: -4px 8px 14px; }
+  #debtActSheet .row[hidden] { display: none; }
+  #debtActSheet .row.first { background-image: none; }
   /* ---------- Glas-Morph (#95): Knopf verwandelt sich wie in iOS 26 in ein Glas-Menü ---------- */
    /* Rand: echte Ebenen mit --rim-gray (genau wie alle anderen Glas-Knöpfe), folgen der Form */
   :root { --mg-btn: rgba(255,255,255,.18); --mg-menu: rgba(255,255,255,.74); --mg-press: rgba(255,255,255,.95); }
@@ -773,6 +845,7 @@
 <aside class="side" id="side" aria-label="Menü">
   <div class="side-scroll">
     <div class="side-title"><svg class="logo" viewBox="0 0 38 34" aria-hidden="true"><line x1="6" y1="5" x2="6" y2="29"/><line x1="14" y1="5" x2="14" y2="29"/><line x1="22" y1="5" x2="22" y2="29"/><line x1="30" y1="5" x2="30" y2="29"/><line class="d" x1="2" y1="24" x2="35" y2="9"/></svg><span class="word">Tally</span><button class="side-more" id="sideMore" aria-label="Mehr"><span class="mg-dots"><i></i><i></i><i></i></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+    <button class="side-row side-debt" id="sideDebtRow"><span class="dt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7.8" r="3.4"/><path d="M2.8 19.5c.7-3.6 3.2-5.6 6.2-5.6 1.6 0 3 .5 4.1 1.5"/><path d="M21.2 13.6a3.1 3.1 0 1 0 0 4.8"/><path d="M15.4 15.2h3.6M15.4 16.9h3.6"/></svg></span><span>Schulden</span><span class="sval" id="sideDebtVal"></span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <div class="side-sec">Tabs</div>
     <div id="sideTabs"></div>
   </div>
@@ -790,7 +863,7 @@
     <div class="side-sec">Daten</div>
       <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
       <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 10.11. #102</p>
+    <p class="side-foot">Version 22.11. #104</p>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -807,6 +880,22 @@
     <div class="stat-chart" id="statChart"></div>
     <div class="st-list" id="statList"></div>
     <div class="st-foot"><button class="st-open" id="statOpen">Tab öffnen</button></div>
+  </div>
+  <!-- Unterseite: Schulden (wer dir wie viel wofür schuldet) -->
+  <div class="side-page" id="sideDebts">
+    <div class="side-head">
+      <button class="side-back" id="debtBack" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span>Schulden</span>
+    </div>
+    <div class="dt-total">Dir werden geschuldet</div>
+    <div class="st-now dt-now" id="debtNow">0 €</div>
+    <div class="st-sub" id="debtSub"></div>
+    <div class="side-sec">Offen</div>
+    <div class="dt-list" id="debtOpen"></div>
+    <div class="side-sec" id="debtPaidSec">Bezahlt</div>
+    <div class="dt-list" id="debtPaid"></div>
+    <div class="dt-fill"></div>
+    <div class="st-foot"><button class="st-open dt-new" id="debtNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Neue Schuld</button></div>
   </div>
   <div class="side-bottom">
     <button class="side-gear" id="sideGear" aria-label="Einstellungen"><svg class="g-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="lid"><path d="M3.8 6.6h16.4"/><path d="M9.2 6.4V5a1.6 1.6 0 0 1 1.6-1.6h2.4A1.6 1.6 0 0 1 14.8 5v1.4"/></g><path d="M5.9 6.8l.9 12.1a2 2 0 0 0 2 1.9h6.4a2 2 0 0 0 2-1.9l.9-12.1"/><path d="M10 10.8v6M14 10.8v6"/></svg><svg class="g-gear" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill-rule="evenodd" d="M9.84 4.19 L10.18 2.17 L13.82 2.17 L14.16 4.19 L15.99 4.95 L17.66 3.76 L20.24 6.34 L19.05 8.01 L19.81 9.84 L21.83 10.18 L21.83 13.82 L19.81 14.16 L19.05 15.99 L20.24 17.66 L17.66 20.24 L15.99 19.05 L14.16 19.81 L13.82 21.83 L10.18 21.83 L9.84 19.81 L8.01 19.05 L6.34 20.24 L3.76 17.66 L4.95 15.99 L4.19 14.16 L2.17 13.82 L2.17 10.18 L4.19 9.84 L4.95 8.01 L3.76 6.34 L6.34 3.76 L8.01 4.95Z M16.10 12 A4.1 4.1 0 1 0 7.90 12 A4.1 4.1 0 1 0 16.10 12Z"/></svg></button>
@@ -898,6 +987,52 @@
   </div>
 </div>
 
+
+<!-- Schuld eintragen / bearbeiten -->
+<div class="sheet" id="debtSheet">
+  <div class="group">
+    <form class="form" id="debtForm" autocomplete="off">
+      <div class="form-head">
+        <button type="button" class="icon-btn x" data-close aria-label="Abbrechen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+        <h2 id="debtTitle">Neue Schuld</h2>
+        <button type="submit" class="icon-btn ok" aria-label="Fertig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 12.8l5.6 5.6L20.4 6"/></svg></button>
+      </div>
+      <p class="dt-lab first">Wer schuldet dir etwas?</p>
+      <input class="input" id="dName" name="search-debt-who" maxlength="40" placeholder="Name" enterkeyhint="next" autocomplete="off" autocorrect="off" data-1p-ignore data-lpignore="true">
+      <div class="dt-names" id="dNames"></div>
+      <p class="dt-lab">Wie viel?</p>
+      <label class="dt-amtf"><input id="dAmt" inputmode="decimal" enterkeyhint="next" placeholder="Betrag" aria-label="Betrag in Euro" autocomplete="off"><span>€</span></label>
+      <p class="dt-lab">Wofür?</p>
+      <input class="input" id="dWhy" name="search-debt-why" maxlength="80" placeholder="Grund, z. B. Kino" enterkeyhint="done" autocomplete="off" data-enter="blur" data-1p-ignore data-lpignore="true">
+      <p class="dt-lab">Datum</p>
+      <input class="input dt-date" id="dDate" type="date">
+      <p class="dt-lab">Von welchem Tab abziehen?</p>
+      <div class="list dt-tabs" id="dTabs"></div>
+      <p class="hint" id="debtHint"></p>
+    </form>
+  </div>
+</div>
+
+<!-- Antippen einer Schuld -->
+<div class="sheet" id="debtActSheet">
+  <div class="group panel">
+    <div class="form-head">
+      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      <h2 id="dActTitle"></h2>
+      <span class="spacer"></span>
+    </div>
+    <p class="confirm-text" id="dActInfo"></p>
+    <div class="list">
+      <button class="row ok" data-d="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5L4.5 9l4.5 4.5"/><path d="M5 9h9.75a4.75 4.75 0 0 1 0 9.5H11.5"/></svg><span class="grow" id="dActBack"></span></button>
+      <button class="row" data-d="done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.4l2.8 2.8L16.2 9.6"/></svg><span class="grow" id="dActDone"></span></button>
+      <button class="row" data-d="reopen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></svg><span class="grow">Wieder offen</span></button>
+      <button class="row" data-d="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 4.5a2.1 2.1 0 0 1 3 0l1 1a2.1 2.1 0 0 1 0 3L9 19l-4.5 1 1-4.5z"/><path d="M14 6l4 4"/></svg><span class="grow">Bearbeiten</span></button>
+    </div>
+    <div class="list">
+      <button class="row destructive" data-d="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9.5 7V5.5a1.5 1.5 0 0 1 1.5-1.5h2a1.5 1.5 0 0 1 1.5 1.5V7"/><path d="M6.5 7l.8 11.2A2 2 0 0 0 9.3 20h5.4a2 2 0 0 0 2-1.8L17.5 7"/><path d="M10.2 11v5M13.8 11v5"/></svg><span class="grow">Löschen</span></button>
+    </div>
+  </div>
+</div>
 
 <!-- Bestätigen -->
 <div class="sheet" id="confirmSheet">
@@ -1077,6 +1212,20 @@
     });
   }
   state.tabs.forEach(t => { t.hist = cleanHist(t.hist); t.sd = cleanSd(t.sd, Math.max(0, t.count | 0)); });
+  // ---------- Schulden (#103): state.debts = [{ id, name, amt, why, date, tab, tn, took, paid }] ----------
+  // tab = Tab, von dem abgezogen wurde (null = nur notiert), took = wirklich abgezogener Betrag, paid = Tag der Rückzahlung
+  function cleanDebts(a) {
+    if (!Array.isArray(a)) return [];
+    const dk = (x) => (typeof x === "string" && /^\d{4}-\d\d-\d\d$/.test(x)) ? x : null;
+    return a.filter(d => d && typeof d === "object" && Number(d.amt) > 0).slice(0, 3000).map(d => ({
+      id: typeof d.id === "string" ? d.id.slice(0, 24) : uid(),
+      name: String(d.name || "").slice(0, 40), amt: Math.round(Number(d.amt) * 100) / 100,
+      why: String(d.why || "").slice(0, 80), date: dk(d.date) || dayKey(),
+      tab: typeof d.tab === "string" ? d.tab.slice(0, 40) : null, tn: String(d.tn || "").slice(0, 40),
+      took: Math.max(0, Math.round((Number(d.took) || 0) * 100) / 100), paid: dk(d.paid),
+    }));
+  }
+  state.debts = cleanDebts(state.debts);
   recordHist();
   let lastAdded = -1;
   let swapping = false;
@@ -1349,7 +1498,7 @@
   // ---------- Rückgängig / Wiederholen ----------
   // Vor jeder Datenänderung wird der vorige Stand gemerkt (nur in dieser Sitzung, max. 60 Schritte).
   var undoStack = [], redoStack = [], lastSnap = null;
-  const snap = () => JSON.stringify({ tabs: state.tabs, activeId: state.activeId });
+  const snap = () => JSON.stringify({ tabs: state.tabs, activeId: state.activeId, debts: state.debts });
   function commit(changedData = true) {
     syncSd();
     recordHist();
@@ -1360,6 +1509,7 @@
     state.updatedAt = Date.now();
     saveLocal();
     render();
+    updDebts();
     lastSnap = snap();
     updateUndo();
   }
@@ -1377,7 +1527,7 @@
     const before = active(), bFull = strokesOf(before).full, bId = before.id, bMoney = moneyOf(before);
     to.push(snap());
     const d = JSON.parse(from.pop());
-    state.tabs = d.tabs; state.activeId = d.activeId;
+    state.tabs = d.tabs; state.activeId = d.activeId; state.debts = cleanDebts(d.debts);
     if (!state.tabs.some(t => t.id === state.activeId)) state.activeId = state.tabs[0].id;
     const after = active(), aFull = strokesOf(after).full;
     lastAdded = -1;
@@ -1385,7 +1535,7 @@
     else if (aFull < bFull) fadeNext = true;               // Striche verschwinden rückwärts (rot)
     else if (aFull > bFull) lastAdded = bFull;             // Strich zeichnet sich wieder (grün)
     state.updatedAt = Date.now();
-    saveLocal(); render();
+    saveLocal(); render(); updDebts();
     lastSnap = snap();
     updateUndo();
     if (Math.abs(moneyOf(active()) - bMoney) > .004) bumpSum();
@@ -1435,6 +1585,7 @@
     document.body.classList.remove("sheet-open");
     if (openSheet) openSheet.classList.remove("show");
     openSheet = null;
+    setTimeout(() => { if (!openSheet) document.body.classList.remove("dt-top"); }, 420);
     const a = document.activeElement;
     if (a && a.blur && a.closest && a.closest(".sheet")) a.blur();
   }
@@ -1470,6 +1621,7 @@
     const json = JSON.stringify({
       tabs: state.tabs.map(t => ({ id: t.id, name: t.name, count: t.count, color: t.color || "blue", value: valOf(t), off: Number(t.off) || 0, hist: t.hist || [], sd: t.sd || [] })),
       activeId: state.activeId,
+      debts: state.debts,
     });
     return "TALLY1:" + btoa(unescape(encodeURIComponent(json)));
   }
@@ -1519,7 +1671,8 @@
     const d = parseCode(ta.value);
     if (!d) { setHint("Das ist kein gültiger Tally-Code. Kopiere ihn nochmal komplett.", true); return; }
     const total = d.tabs.reduce((a, t) => a + (Number(t.count) || 0), 0);
-    confirmAction(d.tabs.length + " Tabs mit insgesamt " + total + " Strichen übernehmen? Die jetzigen Tabs auf diesem Gerät werden ersetzt.", "Importieren", () => {
+    const nd = cleanDebts(d.debts).length;
+    confirmAction(d.tabs.length + " Tabs mit insgesamt " + total + " Strichen" + (nd ? " und " + nd + (nd === 1 ? " Schuld" : " Schulden") : "") + " übernehmen? Die jetzigen Tabs auf diesem Gerät werden ersetzt.", "Importieren", () => {
       const tabs = d.tabs.map(t => ({
         id: String(t.id), name: String(t.name).slice(0, 40),
         count: Math.max(0, Math.floor(Number(t.count) || 0)),
@@ -1529,7 +1682,7 @@
         hist: cleanHist(t.hist),
         sd: cleanSd(t.sd, Math.max(0, Math.floor(Number(t.count) || 0))),
       }));
-      state = { tabs, activeId: tabs.some(t => t.id === d.activeId) ? d.activeId : tabs[0].id, updatedAt: 0 };
+      state = { tabs, activeId: tabs.some(t => t.id === d.activeId) ? d.activeId : tabs[0].id, updatedAt: 0, debts: cleanDebts(d.debts) };
       lastAdded = -1;
       commit();
     });
@@ -1954,7 +2107,7 @@
     });
   }
   function openSide() {
-    renderThemeList(); renderSide();
+    renderThemeList(); renderSide(); updDebts();
     document.body.classList.add("side-open");
   }
   function closeSide() {
@@ -1962,13 +2115,13 @@
     const sd = $("side"); sd.classList.remove("dragging"); sd.style.transform = "";
     document.querySelector(".app").style.transform = "";
     document.body.classList.remove("side-open");
-    setTimeout(() => { if (!document.body.classList.contains("side-open")) { sd.classList.remove("settings"); sd.classList.remove("stats"); statId = null; if (selecting) setSelecting(false); } }, 560);
+    setTimeout(() => { if (!document.body.classList.contains("side-open")) { sd.classList.remove("settings"); sd.classList.remove("stats"); sd.classList.remove("debts"); statId = null; if (selecting) setSelecting(false); } }, 560);
   }
   // ---------- Statistik ----------
   var statId = null, statRange = 0, statT = null;
   function openStats(id) {
     statId = id;
-    const sd = $("side"); sd.classList.remove("settings");
+    const sd = $("side"); sd.classList.remove("settings"); sd.classList.remove("debts");
     $("sideStats").scrollTop = 0;
     // Farbe des Knopfs sofort setzen, ohne Überblendung von der Farbe des vorher geöffneten Tabs
     const ob = $("statOpen");
@@ -2138,8 +2291,186 @@
     box.onpointermove = (e) => { if (box.classList.contains("scrubbing")) scrub(e); };
     box.onpointerup = box.onpointercancel = () => box.classList.remove("scrubbing");
   }
+
+  // ---------- Schulden (#103) ----------
+  // Betrag eines Tabs auf m setzen (volle Striche + Rest wie beim Abrechnen)
+  function setMoney(t, m) {
+    m = Math.max(0, Math.round(m * 100) / 100);
+    const val = valOf(t);
+    t.count = m <= 0 ? 0 : Math.ceil(m / val - 1e-9);
+    t.off = t.count ? Math.round((m - t.count * val) * 100) / 100 : 0;
+  }
+  // Geld in einem Tab ändern (+ dazu, − weg) mit passender Strich-Animation; gibt die echte Änderung zurück
+  function moveMoney(tabId, delta) {
+    const t = state.tabs.find(x => x.id === tabId); if (!t || !delta) return 0;
+    const have = moneyOf(t), next = Math.max(0, Math.round((have + delta) * 100) / 100);
+    if (t.id === state.activeId) { if (next < have) fadeNext = true; else if (next > have) lastAdded = strokesOf(t).full; }
+    setMoney(t, next);
+    return Math.round((next - have) * 100) / 100;
+  }
+  const tabOf = (id) => (id && state.tabs.find(t => t.id === id)) || null;
+  const debtTabName = (d) => { const t = tabOf(d.tab); return t ? t.name : (d.tn || "gelöschter Tab"); };
+  const openDebts = () => state.debts.filter(d => !d.paid);
+  const AV = ["blue", "orange", "purple", "pink", "teal", "indigo", "green", "red"];
+  function avHex(n) { let h = 0; for (const c of n.trim().toLowerCase()) h = (h * 31 + c.charCodeAt(0)) >>> 0; return hexOf(AV[h % AV.length]); }
+  function updDebts() {
+    const sum = openDebts().reduce((a, d) => a + d.amt, 0);
+    $("sideDebtVal").textContent = sum > 0 ? euro(sum) : "";
+    if ($("side").classList.contains("debts")) renderDebts();
+  }
+  function debtItem(d) {
+    const b = document.createElement("button");
+    b.className = "dt-item" + (d.paid ? " paid" : "");
+    b.innerHTML = '<span class="dt-av"></span><span class="dt-mid"><span class="dt-name"></span><span class="dt-why"></span><span class="dt-from"><i></i><span></span></span></span><span class="dt-amt"></span>';
+    const av = b.querySelector(".dt-av");
+    av.style.background = avHex(d.name || "?"); av.textContent = (d.name.trim()[0] || "?").toUpperCase();
+    b.querySelector(".dt-name").textContent = d.name || "Ohne Namen";
+    b.querySelector(".dt-why").textContent = (d.why ? d.why + " · " : "") + dayLabel(d.date);
+    const t = tabOf(d.tab), from = b.querySelector(".dt-from");
+    if (d.paid) { from.querySelector("i").style.display = "none"; from.querySelector("span").textContent = "Bezahlt " + dayLabel(d.paid).replace(/^(Heute|Gestern)$/, (m) => m.toLowerCase()); }
+    else if (d.took > 0) { from.querySelector("i").style.background = t ? hexOf(t.color) : "var(--label3)"; from.querySelector("span").textContent = "von " + debtTabName(d) + " abgezogen"; }
+    else { from.querySelector("i").style.display = "none"; from.querySelector("span").textContent = "nur notiert"; }
+    b.querySelector(".dt-amt").textContent = euro(d.amt);
+    b.onclick = () => openDebtAct(d.id);
+    return b;
+  }
+  function renderDebts() {
+    const open = openDebts(), paid = state.debts.filter(d => d.paid);
+    const byDate = (a, b) => b.date.localeCompare(a.date) || state.debts.indexOf(b) - state.debts.indexOf(a);
+    const sum = open.reduce((a, d) => a + d.amt, 0);
+    $("debtNow").textContent = euro(sum);
+    $("debtNow").classList.toggle("pos", sum > 0);
+    const people = new Set(open.map(d => d.name.trim().toLowerCase())).size;
+    $("debtSub").textContent = open.length ? (people === 1 ? "von 1 Person" : "von " + people + " Personen") + " · " + (open.length === 1 ? "1 Eintrag" : open.length + " Einträge") : "Niemand schuldet dir gerade etwas.";
+    const ob = $("debtOpen"); ob.textContent = "";
+    if (!open.length) ob.innerHTML = '<div class="dt-empty">Noch nichts offen.<br>Tippe auf „Neue Schuld“.</div>';
+    open.sort(byDate).forEach(d => ob.appendChild(debtItem(d)));
+    const pb = $("debtPaid"); pb.textContent = "";
+    paid.sort((a, b) => b.paid.localeCompare(a.paid) || byDate(a, b)).slice(0, 50).forEach(d => pb.appendChild(debtItem(d)));
+    $("debtPaidSec").style.display = paid.length ? "" : "none";
+  }
+  function showDebts() {
+    const sd = $("side"); sd.classList.remove("settings"); sd.classList.remove("stats");
+    $("sideDebts").scrollTop = 0; renderDebts(); sd.classList.add("debts");
+  }
+  $("sideDebtRow").onclick = () => { if (!selecting) showDebts(); };
+  $("debtBack").onclick = () => $("side").classList.remove("debts");
+  // ---- Eintragen / Bearbeiten ----
+  let debtEdit = null, debtTab = null;
+  function renderDebtTabs() {
+    const box = $("dTabs"); box.textContent = "";
+    const opts = state.tabs.map(t => ({ id: t.id, name: t.name, hex: hexOf(t.color), val: euro(moneyOf(t) + (debtEdit && t.id === debtOld().tab ? debtOld().took : 0)) }));
+    opts.push({ id: null, name: "Nicht abziehen", hex: null, val: "" });
+    opts.forEach(o => {
+      const r = document.createElement("button"); r.type = "button";
+      r.className = "row" + (o.id === debtTab ? " sel" : "");
+      r.innerHTML = '<span class="dot"></span><span class="nm"></span><span class="row-val"></span>' + '<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+      const dot = r.querySelector(".dot"); if (o.hex) dot.style.background = o.hex; else dot.classList.add("none");
+      r.querySelector(".nm").textContent = o.name; r.querySelector(".row-val").textContent = o.val;
+      r.onclick = () => { debtTab = o.id; box.querySelectorAll(".row").forEach(x => x.classList.toggle("sel", x === r)); debtHint(); };
+      box.appendChild(r);
+    });
+  }
+  const debtOld = () => (debtEdit && state.debts.find(x => x.id === debtEdit)) || {};
+  function debtHint(err) {
+    const h = $("debtHint");
+    h.classList.toggle("err", !!err);
+    if (err) { h.textContent = err; return; }
+    const amt = parseAmt($("dAmt").value), t = tabOf(debtTab);
+    if (!t) { h.textContent = "Wird nur notiert – von keinem Tab abgezogen."; return; }
+    const old = debtOld(), have = Math.round((moneyOf(t) + (old.tab === t.id ? old.took || 0 : 0)) * 100) / 100;
+    if (amt === null) { h.textContent = "In „" + t.name + "“ sind " + euro(have) + "."; return; }
+    if (amt > have + 1e-9) { h.textContent = "In „" + t.name + "“ sind nur " + euro(have) + " – es wird alles abgezogen, die Schuld bleibt " + euro(amt) + "."; h.classList.add("err"); return; }
+    h.textContent = t.name + ": " + euro(have) + " − " + euro(amt) + " = " + euro(Math.round((have - amt) * 100) / 100);
+  }
+  function renderNameChips() {
+    const box = $("dNames"); box.textContent = "";
+    const seen = new Set();
+    [...state.debts].reverse().forEach(d => {
+      const n = d.name.trim(), k = n.toLowerCase();
+      if (!n || seen.has(k) || seen.size >= 10) return; seen.add(k);
+      const b = document.createElement("button"); b.type = "button"; b.textContent = n;
+      b.onclick = () => { $("dName").value = n; debtHint(); };
+      box.appendChild(b);
+    });
+  }
+  function openDebtForm(id) {
+    const d = id ? state.debts.find(x => x.id === id) : null;
+    debtEdit = d ? d.id : null;
+    $("debtTitle").textContent = d ? "Schuld bearbeiten" : "Neue Schuld";
+    $("dName").value = d ? d.name : "";
+    $("dAmt").value = d ? fmt2.format(d.amt).replace(/,00$/, "").replace(/\./g, "") : "";
+    $("dWhy").value = d ? d.why : "";
+    $("dDate").value = d ? d.date : dayKey();
+    debtTab = d ? (tabOf(d.tab) ? d.tab : null) : state.activeId;
+    renderNameChips(); renderDebtTabs(); debtHint();
+    $("debtSheet").querySelector(".form").scrollTop = 0;
+    document.body.classList.add("dt-top");
+    show($("debtSheet"));
+  }
+  $("debtNew").onclick = () => openDebtForm(null);
+  $("dAmt").addEventListener("input", () => debtHint());
+  $("dName").addEventListener("input", () => { if ($("debtHint").classList.contains("err")) debtHint(); });
+  // Weiter-Taste: Name → Betrag → Grund
+  $("dName").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); $("dAmt").focus(); } }, true);
+  $("dAmt").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); $("dWhy").focus(); } }, true);
+  $("debtForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = $("dName").value.trim().slice(0, 40), amt = parseAmt($("dAmt").value);
+    if (!name) { debtHint("Bitte gib einen Namen ein."); $("dName").focus(); return; }
+    if (amt === null) { debtHint("Bitte gib einen Betrag ein."); $("dAmt").focus(); return; }
+    const dv = $("dDate").value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : dayKey();
+    let d = debtEdit && state.debts.find(x => x.id === debtEdit);
+    lastAdded = -1;
+    if (d) { if (d.took > 0 && tabOf(d.tab)) moveMoney(d.tab, d.took); } // alten Abzug erst zurücknehmen
+    else { d = { id: uid(), paid: null }; state.debts.push(d); }
+    const t = tabOf(debtTab);
+    Object.assign(d, { name, amt, why: $("dWhy").value.trim().slice(0, 80), date, tab: t ? t.id : null, tn: t ? t.name : "" });
+    d.took = t ? -moveMoney(t.id, -amt) : 0;
+    hide(); commit(); bumpSum();
+  });
+  // ---- Antippen: bezahlt / bearbeiten / löschen ----
+  let debtAct = null;
+  function openDebtAct(id) {
+    const d = state.debts.find(x => x.id === id); if (!d) return;
+    debtAct = id;
+    const canBack = !d.paid && d.took > 0 && !!tabOf(d.tab);
+    $("dActTitle").textContent = (d.name || "Ohne Namen") + " · " + euro(d.amt);
+    $("dActInfo").textContent = [d.why, dayLabel(d.date),
+      d.took > 0 ? euro(d.took) + " von „" + debtTabName(d) + "“ abgezogen" : "von keinem Tab abgezogen",
+      d.paid ? "bezahlt " + dayLabel(d.paid) : ""].filter(Boolean).join(" · ");
+    const row = (k) => $("debtActSheet").querySelector('[data-d="' + k + '"]');
+    row("back").hidden = !canBack;
+    $("dActBack").textContent = canBack ? "Bezahlt – zurück in „" + debtTabName(d) + "“" : "";
+    row("done").hidden = !!d.paid;
+    $("dActDone").textContent = canBack ? "Bezahlt – nicht zurückbuchen" : "Als bezahlt markieren";
+    row("reopen").hidden = !d.paid;
+    row("edit").hidden = !!d.paid;
+    let first = true;
+    ["back", "done", "reopen", "edit"].forEach(k => { const r = row(k); r.classList.toggle("first", first && !r.hidden); if (!r.hidden) first = false; });
+    document.body.classList.add("dt-top");
+    show($("debtActSheet"));
+  }
+  $("debtActSheet").addEventListener("click", (e) => {
+    const k = e.target.closest("[data-d]")?.dataset.d, d = state.debts.find(x => x.id === debtAct);
+    if (!k || !d) return;
+    lastAdded = -1;
+    if (k === "back") { moveMoney(d.tab, d.took); d.took = 0; d.paid = dayKey(); hide(); commit(); bumpSum(); return; }
+    if (k === "done") { d.paid = dayKey(); hide(); commit(); return; }
+    if (k === "reopen") { d.paid = null; d.took = 0; d.tab = null; hide(); commit(); return; }
+    if (k === "edit") { openDebtForm(d.id); return; }
+    if (k === "del") {
+      const back = !d.paid && d.took > 0 && tabOf(d.tab);
+      confirmAction("Die Schuld von " + (d.name || "Ohne Namen") + " (" + euro(d.amt) + ") wird gelöscht." + (back ? " Die " + euro(d.took) + " kommen zurück in „" + debtTabName(d) + "“." : ""), "Löschen", () => {
+        if (back) moveMoney(d.tab, d.took);
+        state.debts = state.debts.filter(x => x !== d); lastAdded = back ? lastAdded : -1;
+        commit(); if (back) bumpSum();
+      });
+    }
+  });
+  bindSubmit($("debtForm"));
   $("sideScrim").onclick = closeSide;
-  $("sideGear").onclick = () => { if (selecting) return; renderThemeList(); $("side").classList.remove("stats"); $("side").classList.toggle("settings"); };
+  $("sideGear").onclick = () => { if (selecting) return; renderThemeList(); $("side").classList.remove("stats"); $("side").classList.remove("debts"); $("side").classList.toggle("settings"); };
   $("sideBack").onclick = () => $("side").classList.remove("settings");
   $("sideExport").onclick = () => { closeSide(); setTimeout(() => openData("export"), 250); };
   $("sideImport").onclick = () => { closeSide(); setTimeout(() => openData("import"), 250); };
@@ -2816,7 +3147,9 @@
     if (e.target.closest && e.target.closest("textarea, .wheel")) return;
     const pl = e.target.closest && e.target.closest(".pay-list");
     if (pl && pl.scrollHeight > pl.clientHeight + 1) return;
-    const ss = e.target.closest && e.target.closest(".side-scroll, #sideStats");
+    const dn = e.target.closest && e.target.closest(".dt-names");
+    if (dn && Math.abs(e.touches[0].clientX - tStartX) > Math.abs(e.touches[0].clientY - tStartY)) return; // Namen seitwärts
+    const ss = e.target.closest && e.target.closest(".side-scroll, #sideStats, #sideDebts, .dt-tabs, #debtSheet .form");
     if (ss && ss.scrollHeight > ss.clientHeight + 1) return; // Seitenleiste darf scrollen
     const t = e.touches[0];
     const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
@@ -2840,7 +3173,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#102";
+  const APP_VERSION = "#104";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -3016,8 +3349,10 @@
   document.querySelectorAll(".clicker, .minus").forEach(b => glassPress(b, 1.12, 1.06));
   ["undoBtn", "redoBtn"].forEach(id => glassPress(document.getElementById(id), 1.18, 1.1));
   // Seitenleiste: gleiche Glas-Drück-Animation wie alle anderen Knöpfe
-  ["sideGear", "sideBack", "statBack", "sideMore"].forEach(id => glassPress(document.getElementById(id), 1.34, 1.24));
+  ["sideGear", "sideBack", "statBack", "sideMore", "debtBack"].forEach(id => glassPress(document.getElementById(id), 1.34, 1.24));
   glassPress(document.getElementById("statOpen"), 1.08, 1.06);
+  glassPress(document.getElementById("debtNew"), 1.08, 1.06);
+  glassPress(document.getElementById("sideDebtRow"), 1.08, 1.06);
   glassPress(document.getElementById("sideNew"), 1.14, 1.08);
 })();
 </script>
