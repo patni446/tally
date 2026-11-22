@@ -13,6 +13,7 @@
 <script>if(/github\.io$/.test(location.hostname)){var c=document.createElement("meta");c.httpEquiv="Content-Security-Policy";c.content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none'";document.head.appendChild(c);}</script>
 <title>Tally</title>
 <script>try{var t=localStorage.getItem("tally.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);var dk=t==="dark"||(t!=="light"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);if(dk)document.getElementById("sbStyle").setAttribute("content","black-translucent");}catch(e){}</script>
+<script>try{var L=JSON.parse(localStorage.getItem("tally.lock")||"null");if(L&&(L.id||L.demo)){var a=Number(sessionStorage.getItem("tally.alive")||0);if(!(Date.now()-a<60000))document.documentElement.classList.add("locked");}}catch(e){}</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -837,9 +838,84 @@
   @keyframes lidPop { 0% { rotate: 0deg; } 35% { rotate: -24deg; } 70% { rotate: 6deg; } 100% { rotate: 0deg; } }
   .side-new { transition: opacity .3s ease, scale .45s var(--spring), filter .3s ease; }
   .side.selecting .side-new { opacity: 0; scale: .8; filter: blur(4px); pointer-events: none; }
+  /* ---------- Face-ID-Sperre (#106) ---------- */
+  .lockscr { position: fixed; inset: 0; z-index: 200; display: none; flex-direction: column; align-items: center;
+    background: var(--bg); padding: calc(env(safe-area-inset-top) + 20px) 28px max(28px, calc(env(safe-area-inset-bottom) + 12px)); touch-action: none; }
+  html.locked .lockscr, html.cover .lockscr, html.unlocking .lockscr { display: flex; }
+  html.unlocking .lockscr { pointer-events: none; animation: lkOut .42s cubic-bezier(.32,.72,0,1) forwards; }
+  @keyframes lkOut { to { opacity: 0; scale: 1.08; } }
+  html.unlocking .app { animation: lkAppIn .55s cubic-bezier(.32,.72,0,1); }
+  @keyframes lkAppIn { from { opacity: 0; scale: .93; } }
+  html.cover:not(.locked) .lk-s, html.cover:not(.locked) .lk-btn { visibility: hidden; }
+  .lk-mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .lockscr .side-title { padding: 0 0 40px; }
+  .lk-ic { width: 72px; height: 72px; color: var(--label); }
+  .lk-ic svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  /* Face-ID-Glyphe wie bei Apple: Rahmen-Ecken klappen zu einem drehenden Ring zusammen (Prüfen),
+     Ring schließt sich und ein Haken zeichnet sich (Erfolg) bzw. das Gesicht schüttelt den Kopf (Fehler) */
+  .lk-ic .fx-c, .lk-ic .fx-face, .lk-ic .fx-ring { transform-box: view-box; transform-origin: 24px 24px; }
+  .lk-ic .fx-c { transition: transform .42s cubic-bezier(.32,.72,0,1), opacity .3s ease; }
+  .lk-ic .fx-face { transition: transform .4s cubic-bezier(.32,.72,0,1), opacity .25s ease; }
+  .lk-ic .fx-ring { opacity: 0; stroke-dasharray: 22 126; stroke-dashoffset: 0; transition: opacity .25s ease, stroke-dasharray .38s cubic-bezier(.32,.72,0,1); }
+  .lk-ic .fx-check { stroke-dasharray: 28; stroke-dashoffset: 28; opacity: 0; }
+  .lk-ic.scan .fx-c, .lk-ic.ok .fx-c { opacity: 0; transform: rotate(90deg) scale(.55); }
+  .lk-ic.scan .fx-face, .lk-ic.ok .fx-face { opacity: 0; transform: scale(.6); }
+  .lk-ic.scan .fx-ring, .lk-ic.ok .fx-ring { opacity: 1; transition-delay: .12s, 0s; }
+  .lk-ic.scan .fx-ring { animation: fxSpin .8s linear infinite; }
+  .lk-ic.ok .fx-ring { stroke-dasharray: 126 126; animation: fxSpin .8s linear infinite; }
+  @keyframes fxSpin { to { transform: rotate(360deg); } }
+  .lk-ic.ok .fx-check { opacity: 1; stroke-dashoffset: 0; transition: stroke-dashoffset .32s cubic-bezier(.4,0,.2,1) .2s, opacity .1s linear .2s; }
+  .lk-ic.ok { animation: fxPop .5s cubic-bezier(.34,1.45,.64,1) .45s; }
+  @keyframes fxPop { 45% { transform: scale(1.08); } }
+  .lk-ic.no svg { animation: fxNo .62s ease-in-out; }
+  @keyframes fxNo {
+    0% { transform: none; }
+    16% { transform: perspective(160px) translateX(-5px) rotateY(-30deg); }
+    38% { transform: perspective(160px) translateX(5px) rotateY(26deg); }
+    60% { transform: perspective(160px) translateX(-3px) rotateY(-16deg); }
+    80% { transform: perspective(160px) translateX(2px) rotateY(8deg); }
+    100% { transform: none; }
+  }
+  .lk-t { margin-top: 22px; font-size: 22px; font-weight: 700; }
+  .lk-s { margin-top: 6px; font-size: 15px; line-height: 1.4; color: var(--label2); max-width: 300px; min-height: 42px; }
+  .lk-s.err { color: var(--red); }
+  .lk-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 340px; height: 52px; border-radius: 26px;
+    background: var(--blue); color: #fff; font-size: 17px; font-weight: 600; box-shadow: var(--refl, 0 0 #0000), var(--rim-color); }
+  .lk-btn svg { width: 22px; height: 22px; }
+  /* Schalter wie iOS 26 (nach Patricks Video): Daumen 37×24 in 63×28. Beim Umschalten wird der Daumen zur klaren
+     Glas-Linse (≈1,68×), gleitet hinüber und wird wieder milchig → weiß. Kein echter input switch (Haptik-Regel). */
+  :root { --tgl-off: rgba(120,120,128,.16); }
+  :root[data-theme="dark"] { --tgl-off: rgba(120,120,128,.36); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --tgl-off: rgba(120,120,128,.36); } }
+  .side-row span.tgl { flex: none; overflow: visible; position: relative; width: 63px; height: 28px; border-radius: 14px; background: var(--tgl-off);
+    transition: background-color .16s ease .04s, opacity .2s; }
+  .side-row span.tgl i { position: absolute; top: 2px; left: 2px; width: 37px; height: 24px; border-radius: 12px; display: block; z-index: 1; will-change: transform; }
+  .side-row span.tgl b { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+  .side-row span.tgl .tf { background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.14), 0 .5px 1.5px rgba(0,0,0,.14); }
+  .side-row span.tgl .tg { opacity: 0; background: rgba(255,255,255,.06);
+    box-shadow: inset 0 0 0 .6px rgba(255,255,255,.6), inset 0 1.2px 1px rgba(255,255,255,.45), inset 0 -1px 1px rgba(255,255,255,.18),
+      inset 0 2.5px 2.5px -1.5px rgba(0,0,0,.28), inset 0 -2.5px 2.5px -1.5px rgba(0,0,0,.28), 0 3px 7px rgba(0,0,0,.22); }
+  :root[data-theme="light"] .side-row span.tgl .tg { box-shadow: inset 0 0 0 .6px rgba(0,0,0,.16), inset 0 1.2px 1px rgba(255,255,255,.9), inset 0 -1px 1px rgba(255,255,255,.6),
+      inset 0 2.5px 2.5px -1.5px rgba(0,0,0,.12), inset 0 -2.5px 2.5px -1.5px rgba(0,0,0,.12), 0 3px 7px rgba(0,0,0,.14); }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .side-row span.tgl .tg { box-shadow: inset 0 0 0 .6px rgba(0,0,0,.16), inset 0 1.2px 1px rgba(255,255,255,.9), inset 0 -1px 1px rgba(255,255,255,.6),
+      inset 0 2.5px 2.5px -1.5px rgba(0,0,0,.12), inset 0 -2.5px 2.5px -1.5px rgba(0,0,0,.12), 0 3px 7px rgba(0,0,0,.14); } }
+  .side-row.sw-on span.tgl { background: var(--green); }
+  .side-row.sw-on span.tgl i { transform: translateX(22px); }
+  .side-row.busy span.tgl { opacity: .55; }
+  .side-foot.err { color: var(--red); }
 </style>
 </head>
 <body>
+<!-- Face-ID-Sperre: deckt die ganze App ab, bis entsperrt ist -->
+<div class="lockscr" id="lockScr" role="dialog" aria-modal="true" aria-label="Tally ist gesperrt">
+  <div class="lk-mid">
+    <div class="side-title"><svg class="logo" viewBox="0 0 38 34" aria-hidden="true"><line x1="6" y1="5" x2="6" y2="29"/><line x1="14" y1="5" x2="14" y2="29"/><line x1="22" y1="5" x2="22" y2="29"/><line x1="30" y1="5" x2="30" y2="29"/><line class="d" x1="2" y1="24" x2="35" y2="9"/></svg><span class="word">Tally</span></div>
+    <div class="lk-ic" id="lockIc"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="fx-c" d="M4 15V10a6 6 0 0 1 6-6h5"/><path class="fx-c" d="M33 4h5a6 6 0 0 1 6 6v5"/><path class="fx-c" d="M44 33v5a6 6 0 0 1-6 6h-5"/><path class="fx-c" d="M15 44h-5a6 6 0 0 1-6-6v-5"/><g class="fx-face"><path d="M16 17v4M32 17v4"/><path d="M24 17v9h-2.5"/><path d="M17 32.5c4 3.5 10 3.5 14 0"/></g><circle class="fx-ring" cx="24" cy="24" r="20"/><path class="fx-check" d="M15.5 24.5l6 6 11.5-12.5"/></svg></div>
+    <div class="lk-t">Tally ist gesperrt</div>
+    <div class="lk-s" id="lockSub">Entsperre mit Face ID.</div>
+  </div>
+  <button type="button" class="lk-btn" id="lockBtn"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15V10a6 6 0 0 1 6-6h5M33 4h5a6 6 0 0 1 6 6v5M44 33v5a6 6 0 0 1-6 6h-5M15 44h-5a6 6 0 0 1-6-6v-5"/><path d="M16 17v4M32 17v4"/><path d="M24 17v9h-2.5"/><path d="M17 32.5c4 3.5 10 3.5 14 0"/></svg><span id="lockBtnT">Mit Face ID entsperren</span></button>
+</div>
 <!-- Seitenleiste (wie in der Claude-App): gleitet von links herein, die App rutscht nach rechts -->
 <div class="side-scrim" id="sideScrim"></div>
 <aside class="side" id="side" aria-label="Menü">
@@ -860,10 +936,14 @@
       <button class="side-row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
       <button class="side-row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
     <p class="side-foot" style="padding-top:8px">„Automatisch“ folgt der Einstellung deines iPhones.</p>
+    <div class="side-sec">Sicherheit</div>
+      <button class="side-row" id="lockRow" role="switch" aria-checked="false"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15V10a6 6 0 0 1 6-6h5M33 4h5a6 6 0 0 1 6 6v5M44 33v5a6 6 0 0 1-6 6h-5M15 44h-5a6 6 0 0 1-6-6v-5"/><path d="M16 17v4M32 17v4"/><path d="M24 17v9h-2.5"/><path d="M17 32.5c4 3.5 10 3.5 14 0"/></svg><span>Mit Face ID sperren</span><span class="tgl" aria-hidden="true"><i><b class="tf"></b><b class="tg"></b></i></span></button>
+      <button class="side-row" id="lockNow" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg><span>Jetzt sperren</span></button>
+    <p class="side-foot" id="lockHint" style="padding-top:8px"></p>
     <div class="side-sec">Daten</div>
       <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
       <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 22.11. #105</p>
+    <p class="side-foot">Version 22.11. #107</p>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -3173,7 +3253,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#105";
+  const APP_VERSION = "#107";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -3347,6 +3427,143 @@
   });
   document.querySelectorAll(".gear, .more, .form-head .icon-btn").forEach(b => glassPress(b, 1.34, 1.24));
   document.querySelectorAll(".clicker, .minus").forEach(b => glassPress(b, 1.12, 1.06));
+  // ---------- Face-ID-Sperre (#106) ----------
+  // Passkey (WebAuthn) mit Face ID. Nur Sichtschutz: die Daten bleiben unverschlüsselt im Browser-Speicher.
+  // tally.lock = {id} (echter Passkey) oder {demo:true} (Vorschau in der Claude-Ansicht, dort gibt es kein Face ID).
+  // sessionStorage tally.alive = zuletzt entsperrt/verlassen; unter 1 Min. danach kein erneutes Face ID (auch nach Auto-Update-Neuladen).
+  (() => {
+    const KEY = "tally.lock", GRACE = 60000, root = document.documentElement, onGH = /github\.io$/.test(location.hostname);
+    const load = () => { try { const l = JSON.parse(localStorage.getItem(KEY) || "null"); return l && (l.id || l.demo) ? l : null; } catch (e) { return null; } };
+    let lock = load(), busy = false;
+    const save = () => { try { if (lock) localStorage.setItem(KEY, JSON.stringify(lock)); else localStorage.removeItem(KEY); } catch (e) {} };
+    const alive = () => { try { sessionStorage.setItem("tally.alive", String(Date.now())); } catch (e) {} };
+    const aliveAt = () => { try { return Number(sessionStorage.getItem("tally.alive")) || 0; } catch (e) { return 0; } };
+    const rnd = (n) => crypto.getRandomValues(new Uint8Array(n));
+    const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const unb64 = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+    const canFace = () => !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext && window.crypto && crypto.getRandomValues);
+    async function create() {
+      const c = await navigator.credentials.create({ publicKey: {
+        rp: { name: "Tally", id: location.hostname },
+        user: { id: rnd(16), name: "Tally", displayName: "Tally" },
+        challenge: rnd(32),
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "preferred" },
+        attestation: "none", timeout: 60000,
+      } });
+      return c && c.rawId ? b64(c.rawId) : null;
+    }
+    async function verify() {
+      if (lock && lock.demo) { await new Promise(r => setTimeout(r, 900)); return true; }
+      const a = await navigator.credentials.get({ publicKey: {
+        challenge: rnd(32), rpId: location.hostname, userVerification: "required", timeout: 60000,
+        allowCredentials: [{ type: "public-key", id: unb64(lock.id), transports: ["internal"] }],
+      } });
+      const ad = new Uint8Array(a.response.authenticatorData);
+      return b64(a.rawId) === lock.id && ad.length > 32 && (ad[32] & 4) === 4; // UV-Bit: Face ID bzw. Code wurde wirklich geprüft
+    }
+    // ---- Sperrbildschirm ----
+    const ic = $("lockIc"), sub = $("lockSub");
+    const setSub = (t, err) => { sub.textContent = t; sub.classList.toggle("err", !!err); };
+    const baseSub = () => setSub(lock && lock.demo ? "Vorschau – echtes Face ID gibt es nur in der Home-Bildschirm-App." : "Entsperre mit Face ID.");
+    function showLock() {
+      if (!lock) return;
+      try { sessionStorage.removeItem("tally.alive"); } catch (e) {}
+      const a = document.activeElement; if (a && a.blur && a !== document.body) a.blur();
+      $("lockBtnT").textContent = lock.demo ? "Entsperren" : "Mit Face ID entsperren";
+      baseSub();
+      ic.classList.remove("scan", "ok", "no");
+      root.classList.remove("cover", "unlocking"); root.classList.add("locked");
+    }
+    async function unlock(auto) {
+      if (busy || !lock || !root.classList.contains("locked")) return;
+      if (auto && lock.demo) return; // Vorschau: kein automatisches Entsperren, nur per Tipp
+      busy = true; ic.classList.remove("no", "ok"); ic.classList.add("scan");
+      if (!auto) baseSub();
+      let ok = false, err = null;
+      try { ok = await verify(); } catch (e) { err = e; }
+      if (ok) {
+        alive();
+        ic.classList.remove("scan"); ic.classList.add("ok");        // Ring schließt sich, Haken zeichnet sich
+        setTimeout(() => {
+          busy = false;
+          root.classList.add("unlocking"); root.classList.remove("locked");
+          setTimeout(() => { root.classList.remove("unlocking"); ic.classList.remove("ok"); }, 560);
+          reflectSoon();
+        }, 820);
+        return;
+      }
+      busy = false; ic.classList.remove("scan");
+      if (auto) return; // automatischer Versuch beim Öffnen: still, der Knopf bleibt
+      setTimeout(() => { void ic.offsetWidth; ic.classList.add("no"); }, 300); // erst zurück zum Gesicht, dann Kopfschütteln
+      setTimeout(() => ic.classList.remove("no"), 1000);
+      setSub(err && err.name === "NotAllowedError" ? "Abgebrochen – tippe unten, um es nochmal zu versuchen." : "Face ID hat nicht geklappt. Versuch es nochmal.", true);
+    }
+    $("lockBtn").addEventListener("click", () => unlock(false));
+    glassPress($("lockBtn"), 1.08, 1.06);
+    // App verlassen: sofort abdecken (auch im App-Umschalter); zurück nach mehr als 1 Min. → Face ID
+    document.addEventListener("visibilitychange", () => {
+      if (!lock) return;
+      if (document.visibilityState === "hidden") {
+        if (!root.classList.contains("locked")) { alive(); root.classList.add("cover"); }
+        return;
+      }
+      if (root.classList.contains("locked") || Date.now() - aliveAt() >= GRACE) { showLock(); setTimeout(() => unlock(true), 350); }
+      else root.classList.remove("cover");
+    });
+    addEventListener("pagehide", () => { if (lock && !root.classList.contains("locked")) alive(); });
+    if (lock && root.classList.contains("locked")) { showLock(); setTimeout(() => unlock(true), 400); }
+    else if (!lock) root.classList.remove("locked");
+    // ---- Einstellungen ----
+    const row = $("lockRow"), hint = $("lockHint");
+    // Schalter wie iOS 26: Werte aus Patricks Bildschirmvideo (240 fps) gemessen – [Anteil, Versatz px, Größe]
+    const SW_T = 22, SW_D = 450;
+    const SW_K = [[0, 0, 1], [.04, 2, 1.12], [.11, 6, 1.45], [.22, 11, 1.68], [.49, 19, 1.66], [.56, 20, 1.57], [.63, 21, 1.45],
+      [.70, 23, 1.33], [.78, 22.4, 1.18], [.85, 22, 1.08], [.93, 22, 1.03], [1, 22, 1]];
+    const SW_F = [[0, 1], [.04, .75], [.11, .25], [.15, 0], [.56, 0], [.63, .25], [.70, .5], [.78, .72], [.85, .86], [.93, .96], [1, 1]]; // weiße Füllung
+    const SW_G = [[0, 0], [.11, .8], [.15, 1], [.56, 1], [.70, .55], [.85, .15], [1, 0]];                                              // Glas-Linse
+    function swAnim(on) {
+      const th = row.querySelector(".tgl i");
+      row.classList.toggle("sw-on", on); row.setAttribute("aria-checked", on ? "true" : "false");
+      row._swAt = performance.now();
+      if (!th.animate) return;
+      [th, th.children[0], th.children[1]].forEach(el => el.getAnimations && el.getAnimations().forEach(a => a.cancel()));
+      th.animate(SW_K.map(([o, x, k]) => ({ offset: o, transform: "translateX(" + (on ? x : SW_T - x) + "px) scale(" + k + ")" })), { duration: SW_D });
+      th.children[0].animate(SW_F.map(([o, v]) => ({ offset: o, opacity: v })), { duration: SW_D });
+      th.children[1].animate(SW_G.map(([o, v]) => ({ offset: o, opacity: v })), { duration: SW_D });
+    }
+    // Ergebnis anders als erwartet (z. B. Face ID abgebrochen): erst fertig umschalten lassen, dann zurück
+    const swSettle = () => { if (!!lock === row.classList.contains("sw-on")) return; setTimeout(() => swAnim(!!lock), Math.max(0, SW_D + 40 - (performance.now() - (row._swAt || 0)))); };
+    function paint(msg, err) {
+      if (!row._swAt) { row.classList.toggle("sw-on", !!lock); row.setAttribute("aria-checked", lock ? "true" : "false"); }
+      $("lockNow").hidden = !lock;
+      hint.textContent = msg || (lock && lock.demo
+        ? "Vorschau: In der Claude-Ansicht gibt es kein Face ID – hier reicht ein Tipp zum Entsperren. Echt funktioniert es in der Home-Bildschirm-App."
+        : "Fragt beim Öffnen und nach 1 Min. im Hintergrund nach Face ID. Ist nur ein Sichtschutz – die Daten selbst werden nicht verschlüsselt.");
+      hint.classList.toggle("err", !!err);
+    }
+    row.onclick = async () => {
+      if (busy) return;
+      busy = true;
+      swAnim(!lock);
+      try {
+        if (!lock) {
+          let id = null, e1 = null;
+          if (canFace()) { try { id = await (onGH ? create() : Promise.race([create(), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 6000))])); } catch (e) { e1 = e; } } // Testversion: hängt Face ID in der Claude-Ansicht, nach 6 s Vorschau
+          if (id) { lock = { id }; alive(); save(); paint("Face ID ist an. Ab jetzt fragt Tally beim Öffnen danach."); }
+          else if (!onGH) { lock = { demo: true }; alive(); save(); paint(); }
+          else paint(e1 && e1.name === "NotAllowedError" ? "Abgebrochen – die Sperre ist aus." : "Face ID ist auf diesem Gerät nicht verfügbar.", true);
+        } else {
+          const wasDemo = !!lock.demo;
+          let ok = false; try { ok = await verify(); } catch (e) {}
+          if (ok) { lock = null; save(); paint(wasDemo ? "Die Sperre ist aus." : "Face ID ist aus. Den Passkey „Tally“ kannst du in der Passwörter-App löschen."); }
+          else paint("Zum Ausschalten musst du dich mit Face ID bestätigen.", true);
+        }
+      } finally { busy = false; swSettle(); }
+    };
+    $("lockNow").onclick = () => { closeSide(); setTimeout(showLock, 300); };
+    paint();
+  })();
   ["undoBtn", "redoBtn"].forEach(id => glassPress(document.getElementById(id), 1.18, 1.1));
   // Seitenleiste: gleiche Glas-Drück-Animation wie alle anderen Knöpfe
   ["sideGear", "sideBack", "statBack", "sideMore", "debtBack"].forEach(id => glassPress(document.getElementById(id), 1.34, 1.24));
