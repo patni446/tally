@@ -955,14 +955,67 @@
   .cmp-row .cv { flex: none; margin-top: 1px; font-size: 16px; font-weight: 600; color: var(--label2); font-variant-numeric: tabular-nums; }
   .cmp-about-h { padding: 26px 6px 10px; font-size: 22px; font-weight: 800; }
   .cmp-about { margin-bottom: 16px; padding: 14px 16px; border-radius: 24px; background: var(--side-sel); font-size: 15px; line-height: 1.45; }
-  /* Action-Button-Anleitung */
-  .sc-steps { margin: 0 6px 14px; padding-left: 20px; font-size: 15px; line-height: 1.5; color: var(--label); }
-  .sc-steps li + li { margin-top: 6px; }
-  .sc-steps b { font-weight: 600; }
-  .sc-link { margin: 0 0 10px; padding: 12px 16px; border-radius: 20px; background: var(--fill); font: 13px/1.35 ui-monospace, Menlo, monospace; word-break: break-all;
-    -webkit-user-select: text; user-select: text; }
-  #scCopy { background: var(--blue); color: #fff; }
-  #scSheet .hint { margin: 10px 6px 0; }
+  /* ---------- #110 Einstellungen neu: Karten wie in iOS, Darstellung mit Handy-Vorschau ---------- */
+  #sidePage { padding-bottom: 24px; }
+  .set-sec { font-size: 13px; font-weight: 600; color: var(--label2); padding: 22px 16px 8px; }
+  .side-head + .set-sec { padding-top: 10px; }
+  .set-card { border-radius: 26px; background: var(--side-sel); overflow: hidden; }
+  .set-foot { margin: 0; padding: 8px 16px 0; font-size: 13px; line-height: 1.4; color: var(--label2); }
+  .set-foot.err { color: var(--red); }
+  .side-row.set-row { min-height: 52px; border-radius: 0; padding: 0 14px 0 12px; gap: 12px; font-size: 17px; }
+  .side-row.set-row:active { background-color: var(--fill-press); }
+  .set-card > .set-row + .set-row:not([hidden]) { background-image: linear-gradient(var(--sep), var(--sep)); background-repeat: no-repeat; background-position: 54px 0; background-size: calc(100% - 54px) .5px; }
+  .side-row[hidden] { display: none; }
+  .set-row span.ic { flex: none; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: #fff; }
+  .set-row span.ic svg { width: 18px; height: 18px; color: #fff; }
+  .set-row .chev2 { width: 13px; height: 13px; color: var(--label3); flex: none; }
+  /* Darstellung: zwei Handys wie in den iPhone-Einstellungen, darunter „Automatisch“ */
+  .set-look { display: flex; justify-content: center; gap: 44px; padding: 18px 12px 14px; }
+  .look { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--label); }
+  .look svg { width: 64px; height: 118px; display: block; filter: drop-shadow(0 4px 10px rgba(0,0,0,.16)); transition: transform .45s var(--bounce); }
+  .look:active svg { transform: scale(.94); transition-duration: .1s; }
+  .look.sel svg { transform: scale(1.05); }
+  .look-l { font-size: 15px; font-weight: 500; margin-top: 4px; }
+  .look-r { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1.6px var(--label3);
+    transition: background-color .25s ease, box-shadow .25s ease; }
+  .look-r svg { width: 15px; height: 15px; color: #fff; opacity: 0; transform: scale(.4); transition: opacity .2s ease, transform .4s var(--bounce); }
+  .look.sel .look-r { background: var(--blue); box-shadow: none; }
+  .look.sel .look-r svg { opacity: 1; transform: none; filter: none; }
+  .set-look + .set-row { background-image: linear-gradient(var(--sep), var(--sep)); background-repeat: no-repeat; background-position: 16px 0; background-size: calc(100% - 32px) .5px; padding-left: 16px; }
+  /* Über Tally */
+  .set-about { display: flex; flex-direction: column; align-items: center; padding: 30px 0 6px; }
+  .set-about svg { width: 40px; height: 36px; overflow: visible; }
+  .set-about svg line { stroke: var(--label); stroke-width: 3.6; stroke-linecap: round; }
+  .set-about svg line.d { stroke: var(--green); }
+  .ab-name { margin-top: 6px; padding: 0 4px 4px 0; font-family: ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -.4px; line-height: 1.3;
+    background: linear-gradient(120deg, var(--green) 10%, #30B0C7 95%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+  .set-about .side-foot { padding: 0; text-align: center; }
+  /* ---------- #111 Seitenleiste wie in der Claude-App (Patricks Video): die Leiste liegt UNTER der App,
+     die App gleitet als runde Karte (Display-Ecken, feiner Rand) nach rechts und wird abgedunkelt.
+     Gemessen: App rutscht 320 von 402 pt in ~0,4 s, ohne Überschwingen; Leiste kommt leicht versetzt mit (Parallaxe). ---------- */
+  :root { --side-w: min(80vw, 330px); --side-ext: 70px; --app-rim: 0 0 0 1px rgba(0,0,0,.07), -10px 0 34px rgba(0,0,0,.10); --app-dim: rgba(0,0,0,.16); }
+  :root[data-theme="dark"] { --app-rim: 0 0 0 1px rgba(255,255,255,.13); --app-dim: rgba(0,0,0,.45); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --app-rim: 0 0 0 1px rgba(255,255,255,.13); --app-dim: rgba(0,0,0,.45); } }
+  /* #112: genau so hoch wie die App (in der Claude-Ansicht ist die App kürzer als der Bildschirm – sonst schaute die Leiste unten heraus) */
+  .side { bottom: auto; height: var(--app-h, 100%); }
+  .side { z-index: 0; width: calc(var(--side-w) + var(--side-ext)); padding-right: calc(10px + var(--side-ext)); border-radius: 0; box-shadow: none;
+    transform: translate3d(calc(var(--side-w) * -.28), 0, 0); transition: transform .42s var(--spring), visibility 0s linear .42s; }
+  body.side-open .side { transform: none; transition: transform .42s var(--spring), visibility 0s; }
+  .app { position: relative; background: var(--bg); transition: transform .42s var(--spring), border-radius .42s var(--spring), box-shadow .42s ease; }
+  body.side-open .app { border-radius: var(--dev-r); box-shadow: var(--app-rim); }
+  .app::after { content: ""; position: absolute; inset: 0; z-index: 50; background: var(--app-dim); opacity: 0; pointer-events: none; transition: opacity .42s ease; }
+  body.side-open .app::after { opacity: 1; }
+  .side-scrim { left: var(--side-w); z-index: 5; background: transparent; }
+  /* Liste läuft unter den Knöpfen unten durch und blendet dort weich aus */
+  .side-page { right: var(--side-ext); }
+  .side-bottom { position: absolute; z-index: 3; left: 10px; right: calc(10px + var(--side-ext)); bottom: max(8px, calc(env(safe-area-inset-bottom) - 8px)); }
+  .side::before { content: ""; position: absolute; z-index: 2; left: 0; right: var(--side-ext); bottom: 0; height: calc(max(8px, env(safe-area-inset-bottom) - 8px) + 112px);
+    background: linear-gradient(to bottom, transparent, var(--side-bg) 58%); pointer-events: none; transition: opacity .3s ease; }
+  .side.stats::before, .side.debts::before, .side.cmp::before { opacity: 0; }
+  .side-scroll { padding-bottom: 100px; }
+  #sidePage { bottom: 0; padding-bottom: calc(max(8px, env(safe-area-inset-bottom) - 8px) + 100px); }
+  /* Karten in den Einstellungen und im Vergleich: runder, mit iOS-Ecken (Squircle) */
+  .set-card { border-radius: 30px; }
 </style>
 </head>
 <body>
@@ -993,22 +1046,32 @@
       <button class="side-back" id="sideBack" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <span>Einstellungen</span>
     </div>
-    <div class="side-sec">Darstellung</div>
-      <button class="side-row" data-theme-opt="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg><span>Automatisch</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
-      <button class="side-row" data-theme-opt="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Hell</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
-      <button class="side-row" data-theme-opt="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span>Dunkel</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
-    <p class="side-foot" style="padding-top:8px">„Automatisch“ folgt der Einstellung deines iPhones.</p>
-    <div class="side-sec">Sicherheit</div>
-      <button class="side-row" id="lockRow" role="switch" aria-checked="false"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15V10a6 6 0 0 1 6-6h5M33 4h5a6 6 0 0 1 6 6v5M44 33v5a6 6 0 0 1-6 6h-5M15 44h-5a6 6 0 0 1-6-6v-5"/><path d="M16 17v4M32 17v4"/><path d="M24 17v9h-2.5"/><path d="M17 32.5c4 3.5 10 3.5 14 0"/></svg><span>Mit Face ID sperren</span><span class="tgl" aria-hidden="true"><i><b class="tf"></b><b class="tg"></b></i></span></button>
-      <button class="side-row" id="lockNow" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg><span>Jetzt sperren</span></button>
-    <p class="side-foot" id="lockHint" style="padding-top:8px"></p>
-    <div class="side-sec">Kurzbefehl</div>
-      <button class="side-row" id="scRow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="3"/><path d="M17 8.5h1.5"/></svg><span>Action-Button einrichten</span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
-    <p class="side-foot" style="padding-top:8px">Tipp: Plus gedrückt halten öffnet „Hinzufügen“ – mit eigenem Betrag und Notiz.</p>
-    <div class="side-sec">Daten</div>
-      <button class="side-row" id="sideExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg><span>Daten exportieren</span></button>
-      <button class="side-row" id="sideImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg><span>Daten importieren</span></button>
-    <p class="side-foot">Version 22.11. #109</p>
+    <div class="set-sec">Darstellung</div>
+    <div class="set-card">
+      <div class="set-look">
+        <button class="look" data-look="light"><svg viewBox="0 0 64 118" aria-hidden="true"><rect x=".75" y=".75" width="62.5" height="116.5" rx="14" fill="#2C2C2E" stroke="#48484A" stroke-width="1.5"/><rect x="3.5" y="3.5" width="57" height="111" rx="11.5" fill="#F2F2F7"/><rect x="24" y="7.5" width="16" height="5" rx="2.5" fill="#000"/><rect x="8" y="18" width="15" height="6" rx="3" fill="#FFCC00"/><rect x="26" y="18" width="13" height="6" rx="3" fill="#E3E3E8"/><rect x="7" y="29" width="50" height="46" rx="9" fill="#FFFFFF"/><g stroke="#1C1C1E" stroke-width="1.7" stroke-linecap="round"><path d="M14 39v13M18.5 39v13M23 39v13M27.5 39v13M35 39v13M39.5 39v13"/></g><path d="M11.5 49.5 30 41.5" stroke="#34C759" stroke-width="1.7" stroke-linecap="round"/><path d="M14 60v9M18.5 60v9" stroke="#1C1C1E" stroke-width="1.7" stroke-linecap="round"/><circle cx="22" cy="89" r="8.5" fill="#E3E3E8"/><path d="M18.5 89h7" stroke="#FF453A" stroke-width="1.6" stroke-linecap="round"/><circle cx="42" cy="89" r="8.5" fill="#34C759"/><path d="M42 85.5v7M38.5 89h7" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><rect x="9" y="104" width="18" height="3.5" rx="1.75" fill="#C7C7CC"/><rect x="38" y="102" width="17" height="6.5" rx="3.25" fill="#1C1C1E"/></svg><span class="look-l">Hell</span><span class="look-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 12.5l4 4L18.5 7.5"/></svg></span></button>
+        <button class="look" data-look="dark"><svg viewBox="0 0 64 118" aria-hidden="true"><rect x=".75" y=".75" width="62.5" height="116.5" rx="14" fill="#2C2C2E" stroke="#48484A" stroke-width="1.5"/><rect x="3.5" y="3.5" width="57" height="111" rx="11.5" fill="#000000"/><rect x="24" y="7.5" width="16" height="5" rx="2.5" fill="#000"/><rect x="8" y="18" width="15" height="6" rx="3" fill="#FFD60A"/><rect x="26" y="18" width="13" height="6" rx="3" fill="#2C2C2E"/><rect x="7" y="29" width="50" height="46" rx="9" fill="#1C1C1E"/><g stroke="#F2F2F7" stroke-width="1.7" stroke-linecap="round"><path d="M14 39v13M18.5 39v13M23 39v13M27.5 39v13M35 39v13M39.5 39v13"/></g><path d="M11.5 49.5 30 41.5" stroke="#30D158" stroke-width="1.7" stroke-linecap="round"/><path d="M14 60v9M18.5 60v9" stroke="#F2F2F7" stroke-width="1.7" stroke-linecap="round"/><circle cx="22" cy="89" r="8.5" fill="#2C2C2E"/><path d="M18.5 89h7" stroke="#FF453A" stroke-width="1.6" stroke-linecap="round"/><circle cx="42" cy="89" r="8.5" fill="#30D158"/><path d="M42 85.5v7M38.5 89h7" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><rect x="9" y="104" width="18" height="3.5" rx="1.75" fill="#48484A"/><rect x="38" y="102" width="17" height="6.5" rx="3.25" fill="#F2F2F7"/></svg><span class="look-l">Dunkel</span><span class="look-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 12.5l4 4L18.5 7.5"/></svg></span></button>
+      </div>
+      <button class="side-row set-row" id="autoRow" role="switch" aria-checked="false"><span>Automatisch</span><span class="tgl" aria-hidden="true"><i><b class="tf"></b><b class="tg"></b></i></span></button>
+    </div>
+    <p class="set-foot">„Automatisch“ wechselt mit deinem iPhone zwischen Hell und Dunkel.</p>
+    <div class="set-sec">Sicherheit</div>
+    <div class="set-card">
+      <button class="side-row set-row" id="lockRow" role="switch" aria-checked="false"><span class="ic" style="background:var(--green)"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15V10a6 6 0 0 1 6-6h5M33 4h5a6 6 0 0 1 6 6v5M44 33v5a6 6 0 0 1-6 6h-5M15 44h-5a6 6 0 0 1-6-6v-5"/><path d="M16 17v4M32 17v4"/><path d="M24 17v9h-2.5"/><path d="M17 32.5c4 3.5 10 3.5 14 0"/></svg></span><span>Mit Face ID sperren</span><span class="tgl" aria-hidden="true"><i><b class="tf"></b><b class="tg"></b></i></span></button>
+      <button class="side-row set-row" id="lockNow" hidden><span class="ic" style="background:#8E8E93"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg></span><span>Jetzt sperren</span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <p class="set-foot" id="lockHint"></p>
+    <div class="set-sec">Daten</div>
+    <div class="set-card">
+      <button class="side-row set-row" id="sideExport"><span class="ic" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 6.5 12 3l3.5 3.5"/></svg></span><span>Daten exportieren</span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="side-row set-row" id="sideImport"><span class="ic" style="background:#5856D6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/><path d="M12 3v11M8.5 10.5 12 14l3.5-3.5"/></svg></span><span>Daten importieren</span><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <p class="set-foot">Alle Tabs, Schulden, Notizen und das Archiv als Code – zum Sichern oder für ein anderes Gerät.</p>
+    <div class="set-about">
+      <svg viewBox="0 0 38 34" aria-hidden="true"><line x1="6" y1="5" x2="6" y2="29"/><line x1="14" y1="5" x2="14" y2="29"/><line x1="22" y1="5" x2="22" y2="29"/><line x1="30" y1="5" x2="30" y2="29"/><line class="d" x1="2" y1="24" x2="35" y2="9"/></svg>
+      <div class="ab-name">Tally</div>
+      <p class="side-foot">Version 22.11. #112</p>
+    </div>
   </div>
   <!-- Unterseite: Statistik eines Tabs (antippen in der Liste) -->
   <div class="side-page" id="sideStats">
@@ -1193,25 +1256,6 @@
       <div class="list dt-tabs" id="qTabs"></div>
       <p class="hint" id="qHint"></p>
     </form>
-  </div>
-</div>
-
-<!-- Action-Button einrichten -->
-<div class="sheet" id="scSheet">
-  <div class="group panel">
-    <div class="form-head">
-      <button type="button" class="icon-btn x" data-close aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
-      <h2>Action-Button</h2>
-      <span class="spacer"></span>
-    </div>
-    <ol class="sc-steps">
-      <li>Tippe unten auf <b>Link kopieren</b>.</li>
-      <li>Öffne die App <b>Kurzbefehle</b> → <b>+</b> → Aktion <b>„URL öffnen“</b> → Link einfügen. Nenne den Kurzbefehl „Tally“.</li>
-      <li><b>Einstellungen</b> → <b>Action-Button</b> → <b>Kurzbefehl</b> → „Tally“ wählen.</li>
-    </ol>
-    <div class="sc-link" id="scLink"></div>
-    <button type="button" class="pill" id="scCopy">Link kopieren</button>
-    <p class="hint" id="scHint">Drückst du dann den Action-Button, öffnet Tally direkt „Hinzufügen“: Betrag, wofür, fertig.</p>
   </div>
 </div>
 
@@ -2099,7 +2143,7 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") hide(); });
 
 
-  darkMQ.addEventListener && darkMQ.addEventListener("change", () => smoothTheme(() => { applyTheme(); render(); }));
+  darkMQ.addEventListener && darkMQ.addEventListener("change", () => smoothTheme(() => { applyTheme(); renderThemeList(); render(); }));
 
   // ---------- Pop-ups nach unten wegwischen (wie iOS) ----------
   document.querySelectorAll(".sheet").forEach(sh => {
@@ -2322,7 +2366,9 @@
 
   // ---------- Einstellungen ----------
   function renderThemeList() {
-    document.querySelectorAll("[data-theme-opt]").forEach(b => b.classList.toggle("sel", b.dataset.themeOpt === theme));
+    const dk = isDark();
+    document.querySelectorAll("[data-look]").forEach(b => b.classList.toggle("sel", (b.dataset.look === "dark") === dk));
+    const ar = $("autoRow"); ar.classList.toggle("sw-on", theme === "auto"); ar.setAttribute("aria-checked", theme === "auto" ? "true" : "false");
   }
   // ---------- Seitenleiste ----------
   function renderSide() {
@@ -3219,7 +3265,7 @@
       if (!horiz) return;
       dx = Math.min(0, mx);
       sd.classList.add("dragging"); app.style.transition = "none";
-      sd.style.transform = "translate3d(" + dx + "px,0,0)";
+      sd.style.transform = "translate3d(" + (dx * .28) + "px,0,0)"; // Parallaxe wie beim Öffnen
       app.style.transform = "translate3d(calc(var(--side-w) + " + dx + "px),0,0)";
       if (e.cancelable) e.preventDefault();
     };
@@ -3237,11 +3283,21 @@
     });
   })();
   $("settingsBtn").onclick = openSide;
-  document.querySelectorAll("[data-theme-opt]").forEach(b => b.onclick = () => {
-    theme = b.dataset.themeOpt;
+  function setTheme(t) {
+    theme = t;
     try { if (theme === "auto") localStorage.removeItem("tally.theme"); else localStorage.setItem("tally.theme", theme); } catch (e) {}
     smoothTheme(() => { applyTheme(); renderThemeList(); render(); });
+  }
+  // Handy antippen = fest Hell/Dunkel (schaltet „Automatisch“ aus); Schalter „Automatisch“ = folgt dem iPhone
+  document.querySelectorAll("[data-look]").forEach(b => b.onclick = () => {
+    if (theme === "auto") tglAnim($("autoRow"), false);
+    if (theme !== b.dataset.look) setTheme(b.dataset.look);
   });
+  $("autoRow").onclick = () => {
+    const on = theme !== "auto";
+    tglAnim($("autoRow"), on);
+    setTheme(on ? "auto" : (isDark() ? "dark" : "light"));
+  };
   applyTheme();
 
   // Sichtbare Höhe bestimmen. In der Claude-App auf dem iPhone ist das Fenster
@@ -3391,6 +3447,13 @@
     if (window.ResizeObserver) new ResizeObserver(shape).observe(card);
     shape();
   })();
+  // #111: Karten der Seitenleiste mit iOS-Ecken
+  (() => {
+    const shape = (el) => { const w = el.offsetWidth, h = el.offsetHeight; if (!w || !h) return; const pth = squirclePath(w, h, 30); el.style.clipPath = pth; el.style.webkitClipPath = pth; };
+    const els = document.querySelectorAll(".set-card, .cmp-card, .cmp-about");
+    if (window.ResizeObserver) { const ro = new ResizeObserver(es => es.forEach(en => shape(en.target))); els.forEach(e => ro.observe(e)); }
+    else els.forEach(shape);
+  })();
   // Erst nachdem die App sichtbar ist (schnellerer Start)
   requestAnimationFrame(() => setTimeout(shapeAll, 50));
 
@@ -3407,7 +3470,7 @@
     if (pl && pl.scrollHeight > pl.clientHeight + 1) return;
     const dn = e.target.closest && e.target.closest(".dt-names");
     if (dn && Math.abs(e.touches[0].clientX - tStartX) > Math.abs(e.touches[0].clientY - tStartY)) return; // Namen seitwärts
-    const ss = e.target.closest && e.target.closest(".side-scroll, #sideStats, #sideDebts, #sideAll, .dt-tabs, #debtSheet .form, #addSheet .form");
+    const ss = e.target.closest && e.target.closest(".side-scroll, #sidePage, #sideStats, #sideDebts, #sideAll, .dt-tabs, #debtSheet .form, #addSheet .form");
     if (ss && ss.scrollHeight > ss.clientHeight + 1) return; // Seitenleiste darf scrollen
     const t = e.touches[0];
     const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
@@ -3431,7 +3494,7 @@
   // ---------- Automatisch aktualisieren (nur die GitHub-App) ----------
   // Beim Öffnen und beim Zurückkehren in die App wird geprüft, ob es eine neuere Version gibt.
   // Wenn ja, wird sie frisch geladen – kein Warten mehr auf den Zwischenspeicher.
-  const APP_VERSION = "#109";
+  const APP_VERSION = "#112";
   async function checkUpdate() {
     if (!/github\.io$/.test(location.hostname)) return;
     try {
@@ -3605,6 +3668,23 @@
   });
   document.querySelectorAll(".gear, .more, .form-head .icon-btn").forEach(b => glassPress(b, 1.34, 1.24));
   document.querySelectorAll(".clicker, .minus").forEach(b => glassPress(b, 1.12, 1.06));
+  // ---------- Schalter wie iOS 26 (für alle .tgl-Zeilen) ----------
+  // Werte aus Patricks Bildschirmvideo (240 fps) gemessen – [Anteil, Versatz px, Größe]
+  const SW_T = 22, SW_D = 450;
+  const SW_K = [[0, 0, 1], [.04, 2, 1.12], [.11, 6, 1.45], [.22, 11, 1.68], [.49, 19, 1.66], [.56, 20, 1.57], [.63, 21, 1.45],
+    [.70, 23, 1.33], [.78, 22.4, 1.18], [.85, 22, 1.08], [.93, 22, 1.03], [1, 22, 1]];
+  const SW_F = [[0, 1], [.04, .75], [.11, .25], [.15, 0], [.56, 0], [.63, .25], [.70, .5], [.78, .72], [.85, .86], [.93, .96], [1, 1]]; // weiße Füllung
+  const SW_G = [[0, 0], [.11, .8], [.15, 1], [.56, 1], [.70, .55], [.85, .15], [1, 0]];                                              // Glas-Linse
+  function tglAnim(row, on) {
+    const th = row.querySelector(".tgl i");
+    row.classList.toggle("sw-on", on); row.setAttribute("aria-checked", on ? "true" : "false");
+    row._swAt = performance.now();
+    if (!th.animate) return;
+    [th, th.children[0], th.children[1]].forEach(el => el.getAnimations && el.getAnimations().forEach(a => a.cancel()));
+    th.animate(SW_K.map(([o, x, k]) => ({ offset: o, transform: "translateX(" + (on ? x : SW_T - x) + "px) scale(" + k + ")" })), { duration: SW_D });
+    th.children[0].animate(SW_F.map(([o, v]) => ({ offset: o, opacity: v })), { duration: SW_D });
+    th.children[1].animate(SW_G.map(([o, v]) => ({ offset: o, opacity: v })), { duration: SW_D });
+  }
   // ---------- #109 Hinzufügen mit eigenem Betrag + Notiz ----------
   // Plus gedrückt halten (0,48 s) oder Action-Button (Link …/tally/?quick) öffnet „Hinzufügen“.
   // Leerer Betrag = 1 Strich. Notiz landet in t.nt und erscheint unter dem Tag im Strich-Kasten und in der Statistik.
@@ -3707,19 +3787,6 @@
       else openQuick(tid);
     };
     setTimeout(go, 500);
-  })();
-  // ---------- #109 Action-Button einrichten ----------
-  (() => {
-    const link = (/github\.io$/.test(location.hostname) ? "webapp://" + location.host + location.pathname : "webapp://patni446.github.io/tally/") + "?quick";
-    $("scLink").textContent = link;
-    $("scRow").onclick = () => { $("scHint").classList.remove("err"); $("scHint").textContent = "Drückst du dann den Action-Button, öffnet Tally direkt „Hinzufügen“: Betrag, wofür, fertig."; document.body.classList.add("dt-top"); show($("scSheet")); };
-    $("scCopy").onclick = async () => {
-      let ok = false;
-      try { await navigator.clipboard.writeText(link); ok = true; } catch (e) {}
-      if (!ok) { try { const r = document.createRange(); r.selectNodeContents($("scLink")); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(r); ok = document.execCommand("copy"); } catch (e) {} }
-      $("scHint").textContent = ok ? "Kopiert. Jetzt in Kurzbefehle bei „URL öffnen“ einfügen." : "Kopieren geht hier nicht – halte den Link oben gedrückt und kopiere ihn.";
-      $("scHint").classList.toggle("err", !ok);
-    };
   })();
   // ---------- #109 Archiv in der Seitenleiste ----------
   let archOpen = false;
@@ -3876,22 +3943,7 @@
     else if (!lock) root.classList.remove("locked");
     // ---- Einstellungen ----
     const row = $("lockRow"), hint = $("lockHint");
-    // Schalter wie iOS 26: Werte aus Patricks Bildschirmvideo (240 fps) gemessen – [Anteil, Versatz px, Größe]
-    const SW_T = 22, SW_D = 450;
-    const SW_K = [[0, 0, 1], [.04, 2, 1.12], [.11, 6, 1.45], [.22, 11, 1.68], [.49, 19, 1.66], [.56, 20, 1.57], [.63, 21, 1.45],
-      [.70, 23, 1.33], [.78, 22.4, 1.18], [.85, 22, 1.08], [.93, 22, 1.03], [1, 22, 1]];
-    const SW_F = [[0, 1], [.04, .75], [.11, .25], [.15, 0], [.56, 0], [.63, .25], [.70, .5], [.78, .72], [.85, .86], [.93, .96], [1, 1]]; // weiße Füllung
-    const SW_G = [[0, 0], [.11, .8], [.15, 1], [.56, 1], [.70, .55], [.85, .15], [1, 0]];                                              // Glas-Linse
-    function swAnim(on) {
-      const th = row.querySelector(".tgl i");
-      row.classList.toggle("sw-on", on); row.setAttribute("aria-checked", on ? "true" : "false");
-      row._swAt = performance.now();
-      if (!th.animate) return;
-      [th, th.children[0], th.children[1]].forEach(el => el.getAnimations && el.getAnimations().forEach(a => a.cancel()));
-      th.animate(SW_K.map(([o, x, k]) => ({ offset: o, transform: "translateX(" + (on ? x : SW_T - x) + "px) scale(" + k + ")" })), { duration: SW_D });
-      th.children[0].animate(SW_F.map(([o, v]) => ({ offset: o, opacity: v })), { duration: SW_D });
-      th.children[1].animate(SW_G.map(([o, v]) => ({ offset: o, opacity: v })), { duration: SW_D });
-    }
+    function swAnim(on) { tglAnim(row, on); }
     // Ergebnis anders als erwartet (z. B. Face ID abgebrochen): erst fertig umschalten lassen, dann zurück
     const swSettle = () => { if (!!lock === row.classList.contains("sw-on")) return; setTimeout(() => swAnim(!!lock), Math.max(0, SW_D + 40 - (performance.now() - (row._swAt || 0)))); };
     function paint(msg, err) {
